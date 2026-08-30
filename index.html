@@ -412,18 +412,21 @@ function applyHardFilters(pool){
   if(f.wishOnly) pool=pool.filter(p=>isWish(p));
   return pool;
 }
-function buildPool(meal){
-  const f=S.filters;
+function mealScope(meal){
   let pool=allPlaces().filter(p=>!isBan(p));
-  if(meal==="drinks"){
-    pool=pool.filter(p=>p.cat==="茶饮咖啡");
-  }else if(meal==="breakfast"){
+  if(meal==="drinks") pool=pool.filter(p=>p.cat==="茶饮咖啡");
+  else if(meal==="breakfast"){
     const tiers=DATA.meals.breakfast.tiers;
-    pool=pool.filter(p=>tiers.includes(p.tier||"none") || (f.risky && p.tier==="risky"));
+    pool=pool.filter(p=>tiers.includes(p.tier||"none") || (S.filters.risky && p.tier==="risky"));
   }else{
     pool=pool.filter(p=>p.cat!=="茶饮咖啡");
     pool=pool.filter(p=>!p.meals || p.meals.includes(meal));
   }
+  return pool;
+}
+function buildPool(meal){
+  const f=S.filters;
+  let pool=mealScope(meal);
   pool=applyHardFilters(pool);
   let notice="";
   if(f.noToday){
@@ -431,7 +434,7 @@ function buildPool(meal){
     if(rest.length>0) pool=rest;
     else notice="今天吃过的把池子吃空了，本轮先把它们放回来了";
   }
-  if(meal==="lunch"||meal==="dinner"||meal==="drinks"){
+  if(meal==="lunch"||meal==="dinner"){
     const open=pool.filter(p=>openAt(p,new Date()));
     if(open.length>=3) pool=open;
   }
@@ -572,6 +575,9 @@ function cardHTML(p){
 }
 function filtersChipsHTML(){
   const f=S.filters;
+  const scope=mealScope(S.meal);
+  const cats=[...new Set(scope.map(p=>p.cat))];
+  const tagOrder=TAGS_ALL.filter(t=>scope.some(p=>(p.tags||[]).includes(t)));
   const chip=(on,act,arg,label)=>'<span class="chip'+(on?" on":"")+'" data-act="'+act+'" data-arg="'+arg+'">'+label+"</span>";
   const sw=(on,arg,label)=>'<span class="switch'+(on?" on":"")+'" data-act="ftog" data-arg="'+arg+'">'+label+'<span class="sw"></span></span>';
   let h="";
@@ -579,12 +585,23 @@ function filtersChipsHTML(){
     +chip(!f.price,"fprice",0,"不限")+chip(f.price===15,"fprice",15,"≤15")+chip(f.price===25,"fprice",25,"≤25")+chip(f.price===40,"fprice",40,"≤40")+"</div></div>";
   h+='<div class="fgroup"><div class="lb">距离上限</div><div class="chiprow">'
     +chip(!f.dist,"fdist",0,"不限")+chip(f.dist===1.5,"fdist",1.5,"≤1.5km")+chip(f.dist===2.5,"fdist",2.5,"≤2.5km")+chip(f.dist===4.3,"fdist",4.3,"都能送")+"</div></div>";
-  const cats=[...new Set(allPlaces().map(p=>p.cat))];
-  h+='<div class="fgroup"><div class="lb">品类（不选=全要）</div><div class="chiprow">'+cats.map(c=>chip(f.cats.includes(c),"fcat",c,c)).join("")+"</div></div>";
-  h+='<div class="fgroup"><div class="lb">口味（命中其一即可）</div><div class="chiprow">'+TAGS_ALL.map(t=>chip(f.tags.includes(t),"ftag",t,t)).join("")+"</div></div>";
+  if(cats.length>1){
+    h+='<div class="fgroup"><div class="lb">品类（不选=全要）</div><div class="chiprow">'+cats.map(c=>chip(f.cats.includes(c),"fcat",c,c)).join("")+"</div></div>";
+  }
+  if(tagOrder.length){
+    h+='<div class="fgroup"><div class="lb">口味（命中其一即可）</div><div class="chiprow">'+tagOrder.map(t=>chip(f.tags.includes(t),"ftag",t,t)).join("")+"</div></div>";
+  }
   h+='<div class="fgroup"><div class="lb">开关</div><div class="togglerow">'
-    +sw(f.wishOnly,"wishOnly","只看心愿单")+sw(f.noToday,"noToday","排除今天吃过的")+sw(f.risky,"risky","早餐赌一把（含压线档）")+"</div></div>";
+    +sw(f.wishOnly,"wishOnly","只看心愿单")+sw(f.noToday,"noToday","排除今天吃过的")+(S.meal==="breakfast"?sw(f.risky,"risky","早餐赌一把（含压线档）"):"")+"</div></div>";
   return h;
+}
+function pruneFilters(){
+  const scope=mealScope(S.meal);
+  const cats=new Set(scope.map(p=>p.cat));
+  const tags=new Set(scope.flatMap(p=>(p.tags||[])));
+  S.filters.cats=S.filters.cats.filter(c=>cats.has(c));
+  S.filters.tags=S.filters.tags.filter(t=>tags.has(t));
+  saveAll();
 }
 function renderDecide(){
   const key=dailyKey();
@@ -807,7 +824,7 @@ document.addEventListener("click", e=>{
   const el=e.target.closest("[data-act]"); if(!el) return;
   const act=el.dataset.act, arg=el.dataset.arg;
   switch(act){
-    case "meal": S.meal=arg; S.cache=null; S.swapIdx=null; S.lastPickKey=null; renderTabs(); if(S.tab!=="decide") switchTab("decide"); else renderDecide(); break;
+    case "meal": S.meal=arg; pruneFilters(); S.cache=null; S.swapIdx=null; S.lastPickKey=null; renderTabs(); if(S.tab!=="decide") switchTab("decide"); else renderDecide(); break;
     case "tab": switchTab(arg); break;
     case "draw": {
       const key=dailyKey();
