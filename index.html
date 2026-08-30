@@ -315,6 +315,8 @@ const REROLL_MAX = 5;
 function hashStr(s){ let h=1779033703^s.length; for(let i=0;i<s.length;i++){ h=Math.imul(h^s.charCodeAt(i),3432918353); h=(h<<13)|(h>>>19);} return h>>>0; }
 function mulberry32(a){ return function(){ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 function shortName(n){ return n.replace(/（.*?）|\(.*?\)/g,"") || n; }
+function brandOf(p){ return p.name.split(/[（(]/)[0]; }
+function verb(){ return S.meal==="drinks" ? "喝" : "吃"; }
 function catIcon(p){ return CAT_ICON[p.cat] || "canteen"; }
 function todayKey(d){ d=d||new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function addDays(n){ const d=new Date(); d.setDate(d.getDate()+n); return d; }
@@ -428,8 +430,15 @@ function getPicks(){
   const unseen=pool.filter(p=>!rec.seen.includes(p.id));
   const use=unseen.length>=3?unseen:pool;
   const rng=mulberry32(hashStr(key+"|"+rec.n+"|ganfan"));
-  const arr=use.slice(); const picks=[];
-  for(let k=0;k<3 && arr.length;k++){ const i=weightedIndex(arr,rng); picks.push(arr[i]); arr.splice(i,1); }
+  const arr=use.slice(); const picks=[]; const brands=new Set();
+  for(let k=0;k<3 && arr.length;k++){
+    const cand=arr.filter(p=>!brands.has(brandOf(p)));
+    if(!cand.length) break;
+    const i=weightedIndex(cand,rng);
+    const p=cand[i];
+    picks.push(p); brands.add(brandOf(p));
+    arr.splice(arr.indexOf(p),1);
+  }
   return { main:picks[0]||null, backs:picks.slice(1), notice };
 }
 function currentPicks(){
@@ -441,7 +450,7 @@ function currentPicks(){
 function doReroll(){
   const key=dailyKey(); const rec=S.daily[key]||(S.daily[key]={n:0,seen:[]});
   const cur=currentPicks().main;
-  if(rec.n>=REROLL_MAX){ toast("天意已定！去吃「"+shortName(cur?cur.name:"它")+"」吧"); return; }
+  if(rec.n>=REROLL_MAX){ toast("天意已定！去"+verb()+"「"+shortName(cur?cur.name:"它")+"」吧"); return; }
   if(cur) rec.seen.push(cur.id);
   rec.n++;
   saveAll(); S.cache=null; S.swapIdx=null; renderDecide();
@@ -518,7 +527,7 @@ function cardHTML(p){
     +'<div class="info">'+placeLine(p)+(p.note?" · "+p.note:"")+"</div>"
     +((p.tags&&p.tags.length)?'<div class="tagline">'+p.tags.map(t=>'<span class="tag">'+t+"</span>").join("")+"</div>":"")
     +'<div class="btnrow"><button class="btn" data-act="reroll">'+svgp("reroll")+'换一个</button><button class="btn" data-act="wheel">'+svgp("target")+'转盘</button></div>'
-    +'<div class="btnrow"><button class="btn primary" data-act="log">'+svgp("check")+'就吃它 · 记一笔</button></div>'
+    +'<div class="btnrow"><button class="btn primary" data-act="log">'+svgp("check")+'就'+verb()+'它 · 记一笔</button></div>'
     +'<div class="minirow">'
       +'<button class="mini'+(wish?" on":"")+'" data-act="wish">'+svg(P.heart)+(wish?"已收藏":"收进心愿单")+'</button>'
       +'<button class="mini" data-act="ban">'+svgp("ban")+'拉黑</button>'
@@ -624,7 +633,15 @@ const PALETTE=["#FFE3B0","#FFD1A1","#FFB8A8","#F3C6E9","#C9CFF5","#B8DDFF","#B5E
 function openWheel(pool){
   pool=pool.filter(p=>!isBan(p));
   if(pool.length<2){ toast("候选太少，转不动，放宽筛选吧"); return; }
-  wheel.pool=[...pool].sort((a,b)=>weightOf(b)-weightOf(a)).slice(0,12);
+  const sorted=[...pool].sort((a,b)=>weightOf(b)-weightOf(a));
+  const seenBrand=new Set(); const dedup=[];
+  for(const p of sorted){
+    const b=brandOf(p);
+    if(seenBrand.has(b)) continue;
+    seenBrand.add(b); dedup.push(p);
+    if(dedup.length>=12) break;
+  }
+  wheel.pool=dedup.length>=2?dedup:sorted.slice(0,12);
   $("overlay").hidden=false;
   $("sheetBody").innerHTML='<h5>天意转盘 · '+wheel.pool.length+' 进 1</h5>'
     +'<canvas id="wheelCanvas"></canvas>'
@@ -681,7 +698,7 @@ function spinWheel(){
         +'<div class="winName">'+wheel.winner.name+"</div>"
         +'<div class="info" style="margin-top:6px">'+placeLine(wheel.winner)+(wheel.winner.recs?" · "+wheel.winner.recs:"")+"</div>"+extra
         +'<div class="btnrow"><button class="btn" data-act="closeWheel">算了</button><button class="btn" data-act="spin">再转一次</button></div>'
-        +'<div class="btnrow"><button class="btn primary" data-act="wlog">'+svgp("check")+'就吃它 · 记一笔</button></div>'
+        +'<div class="btnrow"><button class="btn primary" data-act="wlog">'+svgp("check")+'就'+verb()+'它 · 记一笔</button></div>'
         +'<div class="minirow"><button class="mini" data-act="wwish">'+svg(P.heart)+'收心愿单</button><button class="mini" data-act="wban">'+svgp("ban")+'拉黑它</button></div>';
     }
   }
@@ -707,13 +724,13 @@ document.addEventListener("click", e=>{
     case "tab": switchTab(arg); break;
     case "reroll": doReroll(); break;
     case "swap": S.swapIdx=+arg; renderDecide(); break;
-    case "log": { const p=currentPicks().main; logPlace(p); toast("记好啦，干饭愉快"); renderDecide(); break; }
+    case "log": { const p=currentPicks().main; logPlace(p); toast(S.meal==="drinks"?"记好啦，喝得开心":"记好啦，干饭愉快"); renderDecide(); break; }
     case "wish": { const p=currentPicks().main; if(p){ toggleArr("gf.wishlist",S.wish,p.id); renderDecide(); renderRail(); } break; }
     case "ban": { const p=currentPicks().main; if(p){ toggleArr("gf.blacklist",S.black,p.id); S.cache=null; renderDecide(); toast("已拉黑，眼不见为净"); } break; }
     case "wheel": { const {pool}=buildPool(S.meal); openWheel(pool); break; }
     case "spin": spinWheel(); break;
     case "closeWheel": $("overlay").hidden=true; break;
-    case "wlog": logPlace(wheel.winner); $("overlay").hidden=true; toast("记好啦，干饭愉快"); break;
+    case "wlog": logPlace(wheel.winner); $("overlay").hidden=true; toast(S.meal==="drinks"?"记好啦，喝得开心":"记好啦，干饭愉快"); break;
     case "wwish": if(wheel.winner) toggleArr("gf.wishlist",S.wish,wheel.winner.id); break;
     case "wban": if(wheel.winner){ toggleArr("gf.blacklist",S.black,wheel.winner.id); toast("已拉黑"); } break;
     case "backfill": { const p=placeById($("backfillSel").value); logPlace(p); toast("补上啦"); break; }
