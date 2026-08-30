@@ -1,7 +1,7 @@
 /*
- * 干饭罗盘 🧭 —— 内容数据文件（这就是应用的"后端"）
+ * 干饭罗盘 —— 内容数据文件（这就是应用的"后端"）
  * ============================================================
- * 改这里 → git push → GitHub Pages 一分钟内自动更新，无需碰 index.html
+ * 改这里、git push、GitHub Pages 一分钟内自动更新，无需碰 index.html
  *
  * 字段说明：
  *   id     唯一英文标识（随便起，别重复就行）
@@ -18,15 +18,17 @@
  *   note   备注
  */
 window.GANFAN_DATA = {
-  version: 2,
+  version: 3,
   updatedAt: "2026-08-30",
   school: "北京一零一中学(圆明园校区)",
 
   // 餐段定义。breakfast.tiers = 早餐段默认允许抽的档位（7:15 前送达硬约束）
+  // drinks 段只从 cat=="茶饮咖啡" 的条目里抽
   meals: {
-    breakfast: { label: "早餐", emoji: "🌅", pool: ["takeout"], tiers: ["gold", "ontime", "always"] },
-    lunch:     { label: "午餐", emoji: "☀️", pool: ["takeout", "canteen", "custom"] },
-    dinner:    { label: "晚餐", emoji: "🌙", pool: ["takeout", "canteen", "custom"] },
+    breakfast: { label: "早餐", pool: ["takeout"], tiers: ["gold", "ontime", "always"] },
+    lunch:     { label: "午餐", pool: ["takeout", "canteen", "custom"] },
+    dinner:    { label: "晚餐", pool: ["takeout", "canteen", "custom"] },
+    drinks:    { label: "饮料", pool: ["takeout"] },
   },
 
   // ---------------- 外卖池（来自 2026-08 高德实测报告，53 家）----------------

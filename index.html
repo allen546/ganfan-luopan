@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>干饭罗盘 🧭 三大难题终结者</title>
+<title>干饭罗盘 — 三大难题终结者</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23FF9500" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-1.8 5.2-5.2 1.8 1.8-5.2z" fill="%23FF9500" stroke="none"/></svg>'>
 <style>
 /* ============ 干饭罗盘 · Apple 风格（依 emilkowalski/apple-design skill） ============
-   原则：材质分层（毛玻璃边栏/底栏）、按下即时反馈、字号相关字距、层级靠字重与留白、
-   单一强调色、进出同路径、尊重 reduced-motion / reduced-transparency */
+   材质分层、按下即时反馈、字号相关字距、层级靠字重与留白、单一强调色、
+   进出同路径、全 SVG 图标（无 emoji）、尊重 reduced-motion / reduced-transparency */
 :root{
   --bg:#F5F5F7; --card:#FFFFFF; --ink:#1D1D1F; --sub:#86868B;
   --hair:rgba(0,0,0,.08); --fill:rgba(120,120,128,.12);
-  --tint:#FF9500; --danger:#FF3B30;
+  --tint:#FF9500; --danger:#FF3B30; --ok:#34C759;
   --r-card:18px; --r-btn:12px;
   --mat:rgba(255,255,255,.72);
 }
@@ -23,13 +24,12 @@ body{
   -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
 }
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+svg.ic{width:1.15em;height:1.15em;flex:none;vertical-align:-0.18em}
 
-/* ---------- 壳：宽屏三栏（边栏 + 主区 + 右栏），窄屏单列 ---------- */
+/* ---------- 壳：宽屏三栏，窄屏单列 ---------- */
 #app{display:grid;grid-template-columns:minmax(0,1fr);min-height:100vh}
 .sidebar{display:none}
 .rail{display:none}
-
-/* ---------- 边栏（≥1024px，毛玻璃材质层） ---------- */
 @media (min-width:1024px){
   #app{grid-template-columns:264px minmax(0,1fr);max-width:1280px;margin:0 auto}
   .sidebar{
@@ -43,19 +43,20 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   #app{grid-template-columns:264px minmax(0,1fr) 328px;max-width:1440px}
   .rail{display:block}
 }
-.brand{font-size:17px;font-weight:650;letter-spacing:-0.01em;line-height:1.25}
+.brand{font-size:17px;font-weight:650;letter-spacing:-0.01em;line-height:1.25;display:flex;align-items:center;gap:7px}
+.brand .bico{width:22px;height:22px;color:var(--tint)}
 .brand small{display:block;font-size:11px;font-weight:500;color:var(--sub);letter-spacing:.01em}
 .sidebar .brand{padding:0 10px 14px}
 
-/* 边栏餐段列表 */
+/* 边栏 */
 .mealList{display:flex;flex-direction:column;gap:2px;margin:0 4px 10px}
 .mealItem{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;font-size:14px;font-weight:500;text-align:left;transition:background 120ms ease}
 .mealItem:hover{background:rgba(0,0,0,.045)}
 .mealItem:active{transform:scale(.98)}
 .mealItem.on{background:rgba(0,0,0,.08);font-weight:600}
+.mealItem .mico{width:18px;height:18px;color:var(--sub)}
+.mealItem.on .mico{color:var(--tint)}
 .mealItem .hint-s{margin-left:auto;font-size:11px;color:var(--sub);font-weight:400}
-
-/* 边栏主导航 + 底部 */
 .sideNav{display:flex;flex-direction:column;gap:2px;margin:0 4px;border-top:1px solid var(--hair);padding-top:10px}
 .sideNav .navItem{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;font-size:14px;font-weight:500;text-align:left}
 .sideNav .navItem:hover{background:rgba(0,0,0,.045)}
@@ -63,28 +64,22 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .navIcon{width:19px;height:19px;flex:none;color:var(--sub)}
 .sideNav .navItem.on .navIcon{color:var(--ink)}
 .sideFoot{margin-top:auto;padding:12px 10px 0;font-size:11px;color:var(--sub);line-height:1.6}
-#milkTeaSide{margin:10px 4px 0;padding:9px 10px;border-radius:9px;font-size:14px;font-weight:500;text-align:left;display:flex;gap:9px;align-items:center}
-#milkTeaSide:hover{background:rgba(0,0,0,.045)}
 
 /* ---------- 主区 ---------- */
 main{min-width:0;padding:0 0 96px}
-@media (min-width:1024px){
-  main{padding:0 36px 48px}
-  #mealTabs,#mealHint,#viewDecide{max-width:660px}
-}
-.mHead{display:flex;align-items:baseline;gap:10px;padding:16px 16px 2px}
+@media (min-width:1024px){ main{padding:0 36px 48px} }
+.mHead{display:flex;align-items:center;gap:10px;padding:16px 16px 2px}
 @media (min-width:1024px){ .mHead{padding:28px 0 4px} }
 .mHead .brand{display:none}
 @media (max-width:1023.9px){ .mHead .brand{display:block} }
 #dateLine{margin-left:auto;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
-#milkTeaBtn{display:none;font-size:13px;font-weight:500;color:var(--ink);background:var(--fill);padding:6px 12px;border-radius:99px}
-#milkTeaBtn:active{transform:scale(.96)}
 
-/* 餐段分段控件（移动端，iOS segmented control） */
+/* 餐段分段控件（iOS segmented control） */
 #mealTabs{display:flex;gap:2px;margin:10px 16px 0;background:var(--fill);padding:2px;border-radius:10px}
-.mtab{flex:1;padding:7px 0;border-radius:8px;font-size:13px;font-weight:500;text-align:center;color:var(--ink);transition:transform 100ms ease-out}
-.mtab small{display:none}
+.mtab{flex:1;padding:7px 0;border-radius:8px;font-size:13px;font-weight:500;text-align:center;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:5px;transition:transform 100ms ease-out}
+.mtab .mico{width:14px;height:14px;color:var(--sub)}
 .mtab.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.10);font-weight:600}
+.mtab.on .mico{color:var(--tint)}
 .mtab:active{transform:scale(.97)}
 #mealHint{padding:8px 20px 0;font-size:12px;color:var(--sub)}
 
@@ -95,10 +90,11 @@ main{min-width:0;padding:0 0 96px}
 @media (min-width:1024px){ .eyebrow{margin:26px 0 0} }
 .bigcard{text-align:left;padding:24px}
 .bigcard .top{display:flex;align-items:flex-start;gap:14px}
+.catTile{width:52px;height:52px;border-radius:13px;background:var(--fill);display:flex;align-items:center;justify-content:center;flex:none}
+.catTile svg{width:27px;height:27px;color:var(--ink)}
 .photo{display:block;width:calc(100% + 48px);height:200px;object-fit:cover;margin:-24px -24px 16px;border-radius:var(--r-card) var(--r-card) 0 0;background:var(--fill)}
 .bthumb{width:44px;height:44px;border-radius:10px;object-fit:cover;background:var(--fill)}
 .winPhoto{width:100%;height:150px;object-fit:cover;border-radius:14px;margin-top:12px;background:var(--fill)}
-.bigemoji{font-size:40px;line-height:1;margin-top:2px}
 .bigname{font-size:26px;font-weight:700;letter-spacing:-0.022em;line-height:1.15}
 .recs{font-size:13px;color:var(--sub);margin-top:3px}
 .info{font-size:13px;color:var(--sub);margin-top:10px;line-height:1.7}
@@ -114,29 +110,30 @@ main{min-width:0;padding:0 0 96px}
 @media (hover:hover){ .btn.primary:hover{background:#2C2C2E} }
 .btn.small{flex:0 0 auto;height:36px;padding:0 14px;font-size:13px;border-radius:10px}
 .minirow{display:flex;gap:16px;justify-content:flex-end;margin-top:12px}
-.mini{font-size:13px;color:var(--sub);padding:2px 0}
+.mini{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--sub);padding:2px 0}
+.mini svg{width:14px;height:14px}
 .mini.on{color:var(--tint);font-weight:600}
 @media (hover:hover){ .mini:hover{color:var(--ink)} }
-.mini:active{transform:scale(.97)}
+.mini:active{transform:scale(.95)}
 
 /* 备选 */
 .backsWrap{margin:16px 16px 0}
-@media (min-width:1024px){ .backsWrap{margin:22px 0 0;max-width:560px} }
+@media (min-width:1024px){ .backsWrap{margin:22px 0 0} }
 .backsWrap h4{font-size:13px;font-weight:600;color:var(--sub);margin:0 0 8px 2px}
 .backs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .back{background:var(--card);border-radius:14px;padding:14px;font-size:13px;text-align:left;box-shadow:0 0 0 .5px rgba(0,0,0,.04),0 1px 6px rgba(0,0,0,.04);transition:transform 100ms ease-out}
 .back:active{transform:scale(.97)}
 @media (hover:hover){ .back:hover{box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 3px 10px rgba(0,0,0,.07)} }
-.back .e{font-size:20px}
-.back .n{font-weight:600;margin-top:4px;letter-spacing:-0.01em}
+.back .bico{width:40px;height:40px;border-radius:10px;background:var(--fill);display:flex;align-items:center;justify-content:center}
+.back .bico svg{width:21px;height:21px;color:var(--ink)}
+.back .n{font-weight:600;margin-top:6px;letter-spacing:-0.01em}
 .back .p{font-size:11px;color:var(--sub);margin-top:2px;font-variant-numeric:tabular-nums}
-.back:active{transform:scale(.98)}
 
 .notice{background:#FFF3E0;border-radius:12px;padding:9px 13px;font-size:12.5px;color:#8A5A00;margin:12px 16px 0}
-@media (min-width:1024px){ .notice{margin:16px 0 0;max-width:560px} }
+@media (min-width:1024px){ .notice{margin:16px 0 0} }
 .dim{color:var(--sub);font-size:12px}
 
-/* ---------- 筛选（移动端 details / 桌面右栏共用组） ---------- */
+/* ---------- 筛选 ---------- */
 details.filters{margin:12px 16px 0;background:var(--card);border-radius:var(--r-card);padding:14px 16px;font-size:13px;box-shadow:0 0 0 .5px rgba(0,0,0,.04),0 1px 6px rgba(0,0,0,.04)}
 details.filters summary{font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between}
 details.filters summary::after{content:"";width:8px;height:8px;border-right:1.8px solid var(--sub);border-bottom:1.8px solid var(--sub);transform:rotate(45deg);transition:transform 150ms ease}
@@ -148,16 +145,14 @@ details.filters[open] summary::after{transform:rotate(225deg)}
 .chip{padding:6px 12px;border-radius:99px;background:var(--fill);font-size:13px;font-weight:500;user-select:none;transition:transform 100ms ease-out,background 120ms}
 .chip:active{transform:scale(.95)}
 .chip.on{background:var(--ink);color:#fff;font-weight:600}
-
-/* iOS 开关 */
 .togglerow{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;font-weight:500;user-select:none}
 .sw{width:42px;height:26px;border-radius:99px;background:rgba(120,120,128,.22);position:relative;flex:none;transition:background 180ms ease}
 .sw::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform 180ms cubic-bezier(.3,.7,.4,1)}
-.switch.on .sw{background:#34C759}
+.switch.on .sw{background:var(--ok)}
 .switch.on .sw::after{transform:translateX(16px)}
 
-/* ---------- 右栏（≥1440px） ---------- */
+/* ---------- 右栏 ---------- */
 .rail{padding:28px 8px 48px 0}
 .rail .card{padding:16px}
 .rail h4{font-size:13px;font-weight:600;color:var(--sub);margin:0 0 8px}
@@ -175,6 +170,8 @@ details.filters[open] summary::after{transform:rotate(225deg)}
 .logitem .d{color:var(--sub);font-size:11px;min-width:48px;font-variant-numeric:tabular-nums}
 .logitem .m{color:var(--sub);font-size:11px;min-width:22px}
 .logitem .n{flex:1;font-weight:500}
+.logitem .rt{color:var(--sub)}
+.logitem .rt svg{width:13px;height:13px;vertical-align:-2px}
 select,input[type=text],input[type=number]{padding:9px 11px;border-radius:10px;border:none;background:var(--fill);font:inherit;color:var(--ink);width:100%;-webkit-appearance:none;appearance:none}
 select:focus,input:focus{outline:2px solid rgba(255,149,0,.5);outline-offset:1px}
 .formrow{display:flex;gap:8px;margin-top:9px;align-items:center}
@@ -183,20 +180,21 @@ h3.sec{font-size:13px;font-weight:600;color:var(--sub);margin:18px 4px 8px;lette
 .plist{font-size:13.5px}
 .plist .pi{display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--hair);padding:8px 0}
 .plist .pi:last-of-type{border-bottom:none}
+.plist .pi .pico{width:16px;height:16px;color:var(--sub)}
 .plist .pn{flex:1;font-weight:500}
 .pbtn{color:var(--sub);font-size:14px;padding:4px 8px}
 .pbtn:active{transform:scale(.92)}
 
-/* ---------- 底部导航（<1024px，毛玻璃材质） ---------- */
+/* ---------- 底部导航 ---------- */
 #bottomNav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:8vw;z-index:50;
   background:var(--mat);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
   border-top:.5px solid var(--hair);padding-bottom:env(safe-area-inset-bottom)}
 #bottomNav button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 10px;font-size:10.5px;font-weight:500;color:var(--sub);min-width:64px}
 #bottomNav button.on{color:var(--ink);font-weight:600}
-.navIcon{display:block;margin:0 auto}
+#bottomNav .navIcon{display:block;margin:0 auto}
 @media (min-width:1024px){ #bottomNav{display:none} }
 
-/* ---------- 浮层：转盘 / 结果（进出同路径：缩放+淡入淡出） ---------- */
+/* ---------- 浮层 ---------- */
 #overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;
   background:rgba(0,0,0,.34);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 #overlay[hidden]{display:none}
@@ -205,20 +203,19 @@ h3.sec{font-size:13px;font-weight:600;color:var(--sub);margin:18px 4px 8px;lette
 @keyframes sheetIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
 .sheet h5{font-size:13px;font-weight:600;color:var(--sub)}
 #wheelCanvas{width:min(380px,76vw);height:min(380px,76vw);margin:14px auto 4px;display:block}
+.winTile{width:64px;height:64px;border-radius:16px;background:var(--fill);display:flex;align-items:center;justify-content:center;margin:12px auto 0}
+.winTile svg{width:34px;height:34px;color:var(--ink)}
 .winName{font-size:23px;font-weight:700;letter-spacing:-0.02em;margin-top:4px}
-.winEmoji{font-size:38px;margin-top:8px}
 
 #toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);
   background:rgba(28,28,30,.82);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;font-weight:500;opacity:0;transition:opacity .22s;pointer-events:none;z-index:200;max-width:86vw;text-align:center}
 @media (min-width:1024px){ #toast{bottom:36px} }
 .spacer{height:10px}
-.center{text-align:center}
 
-/* ---------- 动效与可访问性（skill §14） ---------- */
+/* ---------- 动效与可访问性 ---------- */
 @media (prefers-reduced-motion: reduce){
   *{animation:none !important;transition:none !important}
-  .sheet{animation:none}
 }
 @media (prefers-reduced-transparency: reduce){
   .sidebar,#bottomNav,#toast{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -229,17 +226,15 @@ h3.sec{font-size:13px;font-weight:600;color:var(--sub);margin:18px 4px 8px;lette
 <body>
 <div id="app">
   <aside class="sidebar">
-    <div class="brand">干饭罗盘 🧭<small>三大难题终结者</small></div>
+    <div class="brand" id="brandSide"></div>
     <nav class="mealList" id="mealTabsDesk"></nav>
-    <button id="milkTeaSide" data-act="milk">🧋 奶茶转盘<span class="hint-s">下午茶专用</span></button>
     <nav class="sideNav" id="sideNav"></nav>
     <div class="sideFoot" id="sideFoot"></div>
   </aside>
 
   <main>
     <div class="mHead">
-      <div class="brand">干饭罗盘 🧭<small>三大难题终结者</small></div>
-      <button id="milkTeaBtn" data-act="milk">🧋 奶茶转盘</button>
+      <div class="brand" id="brandMobile"></div>
       <span id="dateLine"></span>
     </div>
     <nav id="mealTabs"></nav>
@@ -266,33 +261,61 @@ h3.sec{font-size:13px;font-weight:600;color:var(--sub);margin:18px 4px 8px;lette
 <script src="data.js"></script>
 <script>
 "use strict";
-/* ================= 干饭罗盘 v0.2 =================
+/* ================= 干饭罗盘 v0.3 =================
  * 架构：内容后端 = data.js（git push 更新）｜个人后端 = localStorage（gf.* 键）
- * UI 依 emilkowalski/apple-design skill 重制
+ * UI 依 emilkowalski/apple-design skill；全站 SVG 图标，不用 emoji
  */
 const DATA = window.GANFAN_DATA;
 if (!DATA || !DATA.takeout) {
   document.getElementById("viewDecide").innerHTML =
-    '<div class="card">⚠️ 没找到 data.js 或数据为空。请确认 data.js 和本文件在同一目录。</div>';
+    '<div class="card">没找到 data.js 或数据为空。请确认 data.js 和本文件在同一目录。</div>';
   throw new Error("data.js missing");
 }
 
-/* ---------- 工具 ---------- */
+/* ---------- SVG 图标库（线性，跟随 currentColor） ---------- */
+function svg(paths, cls){
+  return '<svg class="'+(cls||"ic")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+paths+"</svg>";
+}
+const P = {
+  compass:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-1.8 5.2-5.2 1.8 1.8-5.2z" fill="currentColor" stroke="none"/>',
+  sunrise:'<path d="M4 17.5h16"/><path d="M8 17.5a4 4 0 0 1 8 0"/><path d="M12 4v4"/><path d="M5.2 6.7 7 8.2"/><path d="M18.8 6.7 17 8.2"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.2"/><path d="M12 19v2.2"/><path d="M2.8 12H5"/><path d="M19 12h2.2"/><path d="M5 5l1.6 1.6"/><path d="M17.4 17.4 19 19"/><path d="M19 5l-1.6 1.6"/><path d="M6.6 17.4 5 19"/>',
+  moon:'<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/>',
+  cup:'<path d="M7 8.5h10L15.9 20a1.5 1.5 0 0 1-1.5 1.3H9.6A1.5 1.5 0 0 1 8.1 20z"/><path d="M9.3 8.5V5.2a1.2 1.2 0 0 1 1.2-1.2H15"/><circle cx="11.2" cy="13.5" r=".8" fill="currentColor" stroke="none"/><circle cx="13.6" cy="16.3" r=".8" fill="currentColor" stroke="none"/>',
+  bun:'<path d="M5.5 15.5a6.5 6.5 0 0 1 13 0"/><path d="M4.5 18.5h15"/><path d="M12 5.5v2.2"/><path d="M8.6 6.4l.8 2"/><path d="M15.4 6.4l-.8 2"/>',
+  burger:'<path d="M4.5 9.5c0-2.8 3.4-5 7.5-5s7.5 2.2 7.5 5z"/><path d="M4.5 12.8h15"/><path d="M4.5 16.2c0 1.8 1.6 3.2 3.6 3.2h7.8c2 0 3.6-1.4 3.6-3.2v-.7h-15z"/>',
+  ricebowl:'<path d="M4.5 12.5h15a7.5 6.5 0 0 1-15 0z"/><path d="M9.2 4.5l2.6 5"/><path d="M14.8 4.5l-2.6 5"/>',
+  noodles:'<path d="M4.5 12.5h15a7.5 6.5 0 0 1-15 0z"/><path d="M8 12.5V7"/><path d="M12 12.5V6"/><path d="M16 12.5V7"/>',
+  skewer:'<circle cx="12" cy="7.5" r="3.2"/><circle cx="12" cy="14.8" r="3.2"/><path d="M12 18v3.5"/>',
+  canteen:'<path d="M4.5 16.5a7.5 7.5 0 0 1 15 0z"/><path d="M3 19h18"/><path d="M12 6.5v2.5"/>',
+  reroll:'<path d="M4 5v5h5"/><path d="M4.8 13.5a7.5 7.5 0 1 0 1.4-6.4L4 10"/>',
+  target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  check:'<path d="M4.5 12.5 10 18 19.5 7"/>',
+  heart:'<path d="M12 20.3C7.4 16.8 3 13.5 3 9.2 3 6.4 5.2 4.5 7.7 4.5c1.8 0 3.3 1 4.3 2.5 1-1.5 2.5-2.5 4.3-2.5 2.5 0 4.7 1.9 4.7 4.7 0 4.3-4.4 7.6-9 11.1z"/>',
+  ban:'<circle cx="12" cy="12" r="8.5"/><path d="M5.8 5.8l12.4 12.4"/>',
+  thumbup:'<path d="M7 11v9"/><path d="M7 20h8.6c1.1 0 2-.7 2.3-1.7l1.3-5.2c.3-1.2-.6-2.4-1.9-2.4H12l.7-3.5c.3-1.5-.6-2.7-2-2.7L7 11"/>',
+  dice:'<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="8.7" cy="8.7" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.3" cy="8.7" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.7" cy="15.3" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.3" cy="15.3" r="1.3" fill="currentColor" stroke="none"/>',
+  book:'<path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v17.5H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M5 19.5V4.5"/><path d="M9 7h6"/><path d="M9 10.5h6"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.3-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.5 2.3-1a7 7 0 0 0 2 1.2l.4 2.6h4l.4-2.6a7 7 0 0 0 2-1.2l2.3 1 2-3.5-2-1.5c.1-.4.1-.8.1-1.2z"/>'
+};
+const svgp = (name, cls) => svg(P[name], cls);
 const $ = id => document.getElementById(id);
-const CAT_EMOJI = { "包子粥品":"🥟","西式快餐":"🍔","中式快餐":"🍚","面馆水饺":"🍜","特色小吃":"🍢","茶饮咖啡":"🧋","食堂":"🏫" };
-const TIER_TEXT = { gold:"🥇 6:00起送·稳", ontime:"🥈 6:30起送·可以", risky:"⚠️ 7:00起·压线", always:"⚡ 全天可送", none:"" };
+window.addEventListener("error", e=>{
+  const v=document.getElementById("viewDecide");
+  if(v && !v.innerHTML) v.innerHTML='<div class="card"><b>加载出错</b><div class="info">'+e.message+"</div></div>";
+});
+
+/* ---------- 常量 ---------- */
+const CAT_ICON = { "包子粥品":"bun","西式快餐":"burger","中式快餐":"ricebowl","面馆水饺":"noodles","特色小吃":"skewer","茶饮咖啡":"cup","食堂":"canteen" };
+const MEAL_ICON = { breakfast:"sunrise", lunch:"sun", dinner:"moon", drinks:"cup" };
+const TIER_TEXT = { gold:"6:00 起送 · 稳", ontime:"6:30 起送 · 可以", risky:"7:00 起 · 压线", always:"全天可送", none:"" };
 const TAGS_ALL = ["辣","清淡","实惠","贵","快","管饱","健康","甜","咖啡"];
 const REROLL_MAX = 5;
-const ICONS = {
-  decide:'<svg class="navIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="8.7" cy="8.7" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.3" cy="15.3" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.3" cy="8.7" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.7" cy="15.3" r="1.35" fill="currentColor" stroke="none"/></svg>',
-  log:'<svg class="navIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v17.5H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M5 19.5V4.5"/><path d="M9 7h6M9 10.5h6"/></svg>',
-  set:'<svg class="navIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.3-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.5 2.3-1a7 7 0 0 0 2 1.2l.4 2.6h4l.4-2.6a7 7 0 0 0 2-1.2l2.3 1 2-3.5-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>'
-};
 
 function hashStr(s){ let h=1779033703^s.length; for(let i=0;i<s.length;i++){ h=Math.imul(h^s.charCodeAt(i),3432918353); h=(h<<13)|(h>>>19);} return h>>>0; }
 function mulberry32(a){ return function(){ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 function shortName(n){ return n.replace(/（.*?）|\(.*?\)/g,"") || n; }
-function catEmoji(p){ return CAT_EMOJI[p.cat] || "🍽️"; }
+function catIcon(p){ return CAT_ICON[p.cat] || "canteen"; }
 function todayKey(d){ d=d||new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function addDays(n){ const d=new Date(); d.setDate(d.getDate()+n); return d; }
 function parseHM(s){ const [h,m]=s.split(":").map(Number); return h*60+(m||0); }
@@ -336,7 +359,7 @@ function autoMeal(){
   const h=new Date().getHours();
   if(h>=5 && h<10) return "breakfast";
   if(h>=10 && h<14) return "lunch";
-  return "dinner";
+  return "dinner";   // 饮料段只手动切换
 }
 function mealIsTomorrow(){ return S.meal==="breakfast" && new Date().getHours()>=21; }
 function dailyKey(){ return todayKey(mealIsTomorrow()?addDays(1):new Date())+"|"+S.meal; }
@@ -368,7 +391,9 @@ function applyHardFilters(pool){
 function buildPool(meal){
   const f=S.filters;
   let pool=allPlaces().filter(p=>!isBan(p));
-  if(meal==="breakfast"){
+  if(meal==="drinks"){
+    pool=pool.filter(p=>p.cat==="茶饮咖啡");
+  }else if(meal==="breakfast"){
     const tiers=DATA.meals.breakfast.tiers;
     pool=pool.filter(p=>tiers.includes(p.tier||"none") || (f.risky && p.tier==="risky"));
   }else{
@@ -380,15 +405,14 @@ function buildPool(meal){
   if(f.noToday){
     const rest=pool.filter(p=>!eatenToday(p.id));
     if(rest.length>0) pool=rest;
-    else notice="今天吃过的把池子吃空了，本轮先把它们放回来了 🤷";
+    else notice="今天吃过的把池子吃空了，本轮先把它们放回来了";
   }
-  if(meal==="lunch"||meal==="dinner"){
+  if(meal==="lunch"||meal==="dinner"||meal==="drinks"){
     const open=pool.filter(p=>openAt(p,new Date()));
     if(open.length>=3) pool=open;
   }
   return { pool, notice };
 }
-function drinkPool(){ return allPlaces().filter(p=>p.cat==="茶饮咖啡" && !isBan(p)); }
 
 /* ---------- 每日一推（日期做种，当天固定）---------- */
 function weightedIndex(arr, rng){
@@ -417,7 +441,7 @@ function currentPicks(){
 function doReroll(){
   const key=dailyKey(); const rec=S.daily[key]||(S.daily[key]={n:0,seen:[]});
   const cur=currentPicks().main;
-  if(rec.n>=REROLL_MAX){ toast("天意已定！去吃「"+shortName(cur?cur.name:"它")+"」吧 🙏"); return; }
+  if(rec.n>=REROLL_MAX){ toast("天意已定！去吃「"+shortName(cur?cur.name:"它")+"」吧"); return; }
   if(cur) rec.seen.push(cur.id);
   rec.n++;
   saveAll(); S.cache=null; S.swapIdx=null; renderDecide();
@@ -427,7 +451,7 @@ function doReroll(){
 function logPlace(p, meal){
   if(!p) return;
   const m=meal||S.meal;
-  if(S.hist.some(h=>h.d===todayKey() && h.m===m && h.id===p.id)){ toast("这顿已经记过啦，别重复算钱 😄"); return; }
+  if(S.hist.some(h=>h.d===todayKey() && h.m===m && h.id===p.id)){ toast("这顿已经记过啦，别重复算钱"); return; }
   S.hist.push({ d:todayKey(), m, id:p.id, name:p.name, r:0 });
   saveAll();
   if(S.tab==="log") renderLog();
@@ -447,26 +471,29 @@ function statsHTML(){
   return h;
 }
 
-/* ---------- 渲染：导航（边栏 + 底栏 + 餐段） ---------- */
-const NAVS=[["decide","决定",ICONS.decide],["log","记录",ICONS.log],["set","设置",ICONS.set]];
+/* ---------- 渲染：导航 ---------- */
+const NAVS=[["decide","决定",P.dice],["log","记录",P.book],["set","设置",P.gear]];
 function renderNav(){
-  $("bottomNav").innerHTML=NAVS.map(([k,l,ic])=>'<button data-act="tab" data-arg="'+k+'" class="'+(S.tab===k?"on":"")+'">'+ic+l+"</button>").join("");
-  $("sideNav").innerHTML=NAVS.map(([k,l,ic])=>'<button class="navItem'+(S.tab===k?" on":"")+'" data-act="tab" data-arg="'+k+'">'+ic+l+"</button>").join("");
+  $("bottomNav").innerHTML=NAVS.map(([k,l,paths])=>
+    '<button data-act="tab" data-arg="'+k+'" class="'+(S.tab===k?"on":"")+'">'+svg(paths,"navIcon")+l+"</button>").join("");
+  $("sideNav").innerHTML=NAVS.map(([k,l,paths])=>
+    '<button class="navItem'+(S.tab===k?" on":"")+'" data-act="tab" data-arg="'+k+'">'+svg(paths,"navIcon")+l+"</button>").join("");
 }
 function renderTabs(){
-  const order=["breakfast","lunch","dinner"];
+  const order=["breakfast","lunch","dinner","drinks"];
   $("mealTabs").innerHTML=order.map(m=>{
     const mm=DATA.meals[m];
-    return '<button class="mtab'+(S.meal===m?" on":"")+'" data-act="meal" data-arg="'+m+'">'+mm.emoji+" "+mm.label+"</button>";
+    return '<button class="mtab'+(S.meal===m?" on":"")+'" data-act="meal" data-arg="'+m+'">'+svgp(MEAL_ICON[m],"mico")+mm.label+"</button>";
   }).join("");
   $("mealTabsDesk").innerHTML=order.map(m=>{
     const mm=DATA.meals[m];
-    const hint=m==="breakfast"?"7:15前":m==="lunch"?"11点后":"17点后";
-    return '<button class="mealItem'+(S.meal===m?" on":"")+'" data-act="meal" data-arg="'+m+'">'+mm.emoji+" "+mm.label+'<span class="hint-s">'+hint+"</span></button>";
+    const hint=m==="breakfast"?"7:15前":m==="lunch"?"11点后":m==="dinner"?"17点后":"茶饮咖啡";
+    return '<button class="mealItem'+(S.meal===m?" on":"")+'" data-act="meal" data-arg="'+m+'">'+svgp(MEAL_ICON[m],"mico")+mm.label+'<span class="hint-s">'+hint+"</span></button>";
   }).join("");
-  let h=DATA.meals[S.meal].emoji+" "+DATA.meals[S.meal].label;
+  let h=DATA.meals[S.meal].label;
   if(mealIsTomorrow()) h+=" · 现在是晚上，按「明早」来算";
   if(S.meal==="breakfast") h+=" · 只推 7:15 前能送到的档";
+  if(S.meal==="drinks") h+=" · 茶饮咖啡专区";
   $("mealHint").textContent=h;
 }
 
@@ -479,22 +506,22 @@ function placeLine(p){
   return bits.join(" · ");
 }
 function cardHTML(p){
-  if(!p) return '<div class="card bigcard"><div class="bigemoji">🫙</div><div class="bigname" style="font-size:20px">池子空了</div><div class="info">放宽下面的筛选试试</div></div>';
+  if(!p) return '<div class="card bigcard"><div class="bigname" style="font-size:20px">池子空了</div><div class="info">放宽下面的筛选试试</div></div>';
   const wish=isWish(p);
   const recsLine=p.recs||(p.menu?p.menu.join(" / "):"");
   return '<div class="card bigcard">'
     +(p.img?'<img class="photo" src="'+p.img+'" loading="lazy" alt="'+p.name+'">':"")
-    +'<div class="top"><div class="bigemoji">'+catEmoji(p)+'</div><div>'
+    +'<div class="top"><div class="catTile">'+svgp(catIcon(p))+'</div><div>'
       +'<div class="bigname">'+p.name+'</div>'
       +(recsLine?'<div class="recs">'+recsLine+'</div>':"")
     +"</div></div>"
     +'<div class="info">'+placeLine(p)+(p.note?" · "+p.note:"")+"</div>"
     +((p.tags&&p.tags.length)?'<div class="tagline">'+p.tags.map(t=>'<span class="tag">'+t+"</span>").join("")+"</div>":"")
-    +'<div class="btnrow"><button class="btn" data-act="reroll">换一个</button><button class="btn" data-act="wheel">🎯 转盘</button></div>'
-    +'<div class="btnrow"><button class="btn primary" data-act="log">就吃它 · 记一笔</button></div>'
+    +'<div class="btnrow"><button class="btn" data-act="reroll">'+svgp("reroll")+'换一个</button><button class="btn" data-act="wheel">'+svgp("target")+'转盘</button></div>'
+    +'<div class="btnrow"><button class="btn primary" data-act="log">'+svgp("check")+'就吃它 · 记一笔</button></div>'
     +'<div class="minirow">'
-      +'<button class="mini'+(wish?" on":"")+'" data-act="wish">'+(wish?"❤️ 已收藏":"🤍 收进心愿单")+'</button>'
-      +'<button class="mini" data-act="ban">🚫 拉黑</button>'
+      +'<button class="mini'+(wish?" on":"")+'" data-act="wish">'+svg(P.heart)+(wish?"已收藏":"收进心愿单")+'</button>'
+      +'<button class="mini" data-act="ban">'+svgp("ban")+'拉黑</button>'
     +"</div>"
   +"</div>";
 }
@@ -508,7 +535,7 @@ function filtersChipsHTML(){
   h+='<div class="fgroup"><div class="lb">距离上限</div><div class="chiprow">'
     +chip(!f.dist,"fdist",0,"不限")+chip(f.dist===1.5,"fdist",1.5,"≤1.5km")+chip(f.dist===2.5,"fdist",2.5,"≤2.5km")+chip(f.dist===4.3,"fdist",4.3,"都能送")+"</div></div>";
   const cats=[...new Set(allPlaces().map(p=>p.cat))];
-  h+='<div class="fgroup"><div class="lb">品类（不选=全要）</div><div class="chiprow">'+cats.map(c=>chip(f.cats.includes(c),"fcat",c,CAT_EMOJI[c]+" "+c)).join("")+"</div></div>";
+  h+='<div class="fgroup"><div class="lb">品类（不选=全要）</div><div class="chiprow">'+cats.map(c=>chip(f.cats.includes(c),"fcat",c,c)).join("")+"</div></div>";
   h+='<div class="fgroup"><div class="lb">口味（命中其一即可）</div><div class="chiprow">'+TAGS_ALL.map(t=>chip(f.tags.includes(t),"ftag",t,t)).join("")+"</div></div>";
   h+='<div class="fgroup"><div class="lb">开关</div><div class="togglerow">'
     +sw(f.wishOnly,"wishOnly","只看心愿单")+sw(f.noToday,"noToday","排除今天吃过的")+sw(f.risky,"risky","早餐赌一把（含压线档）")+"</div></div>";
@@ -531,7 +558,7 @@ function renderDecide(){
   h+=cardHTML(picks.main);
   if(picks.backs.length){
     h+='<div class="backsWrap"><h4>备选 · 点一下换成主推</h4><div class="backs">'
-      +picks.backs.map((b,i)=>'<button class="back" data-act="swap" data-arg="'+i+'">'+(b.img?'<img class="bthumb" src="'+b.img+'" loading="lazy" alt="">':'<div class="e">'+catEmoji(b)+'</div>')+'<div class="n">'+shortName(b.name)+'</div><div class="p">¥'+(b.price??"?")+" · "+(b.distKm?b.distKm.toFixed(1)+"km":"自备")+"</div></button>").join("")
+      +picks.backs.map((b,i)=>'<button class="back" data-act="swap" data-arg="'+i+'">'+(b.img?'<img class="bthumb" src="'+b.img+'" loading="lazy" alt="">':'<div class="bico">'+svgp(catIcon(b))+'</div>')+'<div class="n">'+shortName(b.name)+'</div><div class="p">¥'+(b.price??"?")+" · "+(b.distKm?b.distKm.toFixed(1)+"km":"自备")+"</div></button>").join("")
       +"</div></div>";
   }
   h+='<details class="filters"'+(S.filtersOpen?" open":"")+' ontoggle="S.filtersOpen=this.open"><summary>筛选与开关</summary>'+filtersChipsHTML()+"</details>";
@@ -546,7 +573,8 @@ function renderLog(){
   const recent=S.hist.slice(-20).reverse();
   h+=recent.length?recent.map(x=>{
     const mm=DATA.meals[x.m]||{label:x.m};
-    return '<div class="logitem"><span class="d">'+x.d.slice(5)+'</span><span class="m">'+mm.label.slice(0,1)+'</span><span class="n">'+x.name+'</span><span>'+(x.r>0?"👍":x.r<0?"👎":"")+'</span></div>';
+    const rt=x.r>0?svg(P.thumbup):x.r<0?svg('<g transform="rotate(180 12 12)">'+P.thumbup+"</g>"):"";
+    return '<div class="logitem"><span class="d">'+x.d.slice(5)+'</span><span class="m">'+mm.label.slice(0,1)+'</span><span class="n">'+x.name+'</span><span class="rt">'+rt+"</span></div>";
   }).join(""):'<span class="dim">暂无</span>';
   h+='</div><div class="formrow"><select id="backfillSel">'
     +allPlaces().map(p=>'<option value="'+p.id+'">'+p.name+"</option>").join("")
@@ -561,20 +589,20 @@ function renderSet(){
   let h='<div class="eyebrow">设置</div>';
   h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">数据版本</h3>'
     +'<div class="dim">data.js v'+DATA.version+" · 更新于 "+DATA.updatedAt+'<br>外卖 '+DATA.takeout.length+" 家 · 食堂窗口 "+stalls.length+" 个（开学请早） · 自定义 "+S.custom.length+' 条</div>'
-    +'<div class="spacer"></div><div class="dim">改 data.js → git push → 一分钟生效。个人数据只存在本机浏览器。</div></div>';
-  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">❤️ 心愿单（抽中概率×2）</h3><div class="plist">';
-  h+=S.wish.length?S.wish.map(id=>{const p=placeById(id);return p?'<div class="pi"><span>'+catEmoji(p)+'</span><span class="pn">'+p.name+'</span><button class="pbtn" data-act="unwish" data-arg="'+id+'">✕</button></div>':""}).join(""):'<span class="dim">空。抽卡结果下面有收藏按钮。</span>';
+    +'<div class="spacer"></div><div class="dim">改 data.js 并 git push，一分钟后生效。个人数据只存在本机浏览器。</div></div>';
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">心愿单（抽中概率×2）</h3><div class="plist">';
+  h+=S.wish.length?S.wish.map(id=>{const p=placeById(id);return p?'<div class="pi"><span class="pico">'+svgp(catIcon(p))+'</span><span class="pn">'+p.name+'</span><button class="pbtn" data-act="unwish" data-arg="'+id+'">移除</button></div>':""}).join(""):'<span class="dim">空。抽卡结果下面有收藏按钮。</span>';
   h+='</div></div>';
-  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">🚫 黑名单（永不推荐）</h3><div class="plist">';
-  h+=S.black.length?S.black.map(id=>{const p=placeById(id);return p?'<div class="pi"><span class="pn">'+p.name+'</span><button class="pbtn" data-act="unban" data-arg="'+id+'">✕</button></div>':""}).join(""):'<span class="dim">空</span>';
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">黑名单（永不推荐）</h3><div class="plist">';
+  h+=S.black.length?S.black.map(id=>{const p=placeById(id);return p?'<div class="pi"><span class="pn">'+p.name+'</span><button class="pbtn" data-act="unban" data-arg="'+id+'">移除</button></div>':""}).join(""):'<span class="dim">空</span>';
   h+='</div><div class="formrow"><select id="banSel">'+allPlaces().filter(p=>!isBan(p)).map(p=>'<option value="'+p.id+'">'+p.name+"</option>").join("")+'</select><button class="btn small" data-act="doban">拉黑</button></div></div>';
-  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">➕ 加个自定义选项</h3><div class="formrow"><input type="text" id="cusName" placeholder="比如：小卖部关东煮"></div>'
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">加个自定义选项</h3><div class="formrow"><input type="text" id="cusName" placeholder="比如：小卖部关东煮"></div>'
     +'<div class="formrow"><select id="cusCat">'+["特色小吃","中式快餐","西式快餐","面馆水饺","包子粥品"].map(c=>"<option>"+c+"</option>").join("")+'</select>'
     +'<input type="number" id="cusPrice" placeholder="人均¥" style="flex:0 0 90px">'
     +'<button class="btn small" data-act="addcustom">添加</button></div>'
-    +(S.custom.length?'<div class="plist">'+S.custom.map(p=>'<div class="pi"><span>'+catEmoji(p)+'</span><span class="pn">'+p.name+'</span><button class="pbtn" data-act="delcustom" data-arg="'+p.id+'">✕</button></div>').join("")+"</div>":"")
+    +(S.custom.length?'<div class="plist">'+S.custom.map(p=>'<div class="pi"><span class="pico">'+svgp(catIcon(p))+'</span><span class="pn">'+p.name+'</span><button class="pbtn" data-act="delcustom" data-arg="'+p.id+'">移除</button></div>').join("")+"</div>":"")
     +"</div>";
-  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">💾 个人数据</h3>'
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">个人数据</h3>'
     +'<div class="btnrow"><button class="btn small" data-act="export">导出备份</button>'
     +'<button class="btn small" data-act="import">导入备份</button></div>'
     +'<input type="file" id="importFile" accept=".json" hidden>'
@@ -582,7 +610,7 @@ function renderSet(){
   $("viewSet").innerHTML=h;
 }
 
-/* ---------- 右栏（宽屏：筛选 + 本周速览） ---------- */
+/* ---------- 右栏 ---------- */
 function renderRail(){
   const rf=$("railFilters"), rs=$("railStats");
   if(!rf) return;
@@ -647,14 +675,14 @@ function spinWheel(){
     else{
       wheel.spinning=false; wheel.winner=wheel.pool[idx];
       if(wheel.sameId===wheel.winner.id) wheel.sameN++; else {wheel.sameId=wheel.winner.id; wheel.sameN=1;}
-      let extra=wheel.sameN>=3?'<div class="notice" style="margin-top:12px">🎲 连着三次都是它，这就是天意吧！</div>':"";
+      let extra=wheel.sameN>=3?'<div class="notice" style="margin-top:12px">连着三次都是它，这就是天意吧</div>':"";
       $("sheetBody").innerHTML='<h5>天意选中了</h5>'
-        +(wheel.winner.img?'<img class="winPhoto" src="'+wheel.winner.img+'" loading="lazy" alt="">':'<div class="winEmoji">'+catEmoji(wheel.winner)+"</div>")
+        +(wheel.winner.img?'<img class="winPhoto" src="'+wheel.winner.img+'" loading="lazy" alt="">':'<div class="winTile">'+svgp(catIcon(wheel.winner))+"</div>")
         +'<div class="winName">'+wheel.winner.name+"</div>"
         +'<div class="info" style="margin-top:6px">'+placeLine(wheel.winner)+(wheel.winner.recs?" · "+wheel.winner.recs:"")+"</div>"+extra
         +'<div class="btnrow"><button class="btn" data-act="closeWheel">算了</button><button class="btn" data-act="spin">再转一次</button></div>'
-        +'<div class="btnrow"><button class="btn primary" data-act="wlog">就吃它 · 记一笔</button></div>'
-        +'<div class="minirow"><button class="mini" data-act="wwish">🤍 收心愿单</button><button class="mini" data-act="wban">🚫 拉黑它</button></div>';
+        +'<div class="btnrow"><button class="btn primary" data-act="wlog">'+svgp("check")+'就吃它 · 记一笔</button></div>'
+        +'<div class="minirow"><button class="mini" data-act="wwish">'+svg(P.heart)+'收心愿单</button><button class="mini" data-act="wban">'+svgp("ban")+'拉黑它</button></div>';
     }
   }
   requestAnimationFrame(frame);
@@ -679,16 +707,10 @@ document.addEventListener("click", e=>{
     case "tab": switchTab(arg); break;
     case "reroll": doReroll(); break;
     case "swap": S.swapIdx=+arg; renderDecide(); break;
-    case "log": { const p=currentPicks().main; logPlace(p); toast("记好啦，干饭愉快 🍚"); renderDecide(); break; }
+    case "log": { const p=currentPicks().main; logPlace(p); toast("记好啦，干饭愉快"); renderDecide(); break; }
     case "wish": { const p=currentPicks().main; if(p){ toggleArr("gf.wishlist",S.wish,p.id); renderDecide(); renderRail(); } break; }
     case "ban": { const p=currentPicks().main; if(p){ toggleArr("gf.blacklist",S.black,p.id); S.cache=null; renderDecide(); toast("已拉黑，眼不见为净"); } break; }
     case "wheel": { const {pool}=buildPool(S.meal); openWheel(pool); break; }
-    case "milk": openWheel(drinkPool()); break;
-    case "spin": spinWheel(); break;
-    case "closeWheel": $("overlay").hidden=true; break;
-    case "wlog": logPlace(wheel.winner); $("overlay").hidden=true; toast("记好啦，干饭愉快 🍚"); break;
-    case "wwish": if(wheel.winner) toggleArr("gf.wishlist",S.wish,wheel.winner.id); break;
-    case "wban": if(wheel.winner){ toggleArr("gf.blacklist",S.black,wheel.winner.id); toast("已拉黑"); } break;
     case "backfill": { const p=placeById($("backfillSel").value); logPlace(p); toast("补上啦"); break; }
     case "unwish": S.wish=S.wish.filter(x=>x!==arg); saveAll(); renderSet(); renderRail(); break;
     case "unban": S.black=S.black.filter(x=>x!==arg); saveAll(); S.cache=null; renderSet(); break;
@@ -739,6 +761,9 @@ document.addEventListener("change", e=>{
   const wd=["周日","周一","周二","周三","周四","周五","周六"];
   const d=new Date();
   $("dateLine").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日 · "+wd[d.getDay()];
+  const brandHTML='<span class="bico">'+svgp("compass","bico")+'</span><span>干饭罗盘<small>三大难题终结者</small></span>';
+  $("brandSide").innerHTML=brandHTML;
+  $("brandMobile").innerHTML=brandHTML;
   const stalls=(DATA.canteen&&DATA.canteen.stalls)||[];
   $("sideFoot").innerHTML="data.js v"+DATA.version+" · "+DATA.updatedAt+"<br>外卖 "+DATA.takeout.length+" 家 · 食堂 "+stalls.length+" 窗口";
   S.meal=autoMeal();
