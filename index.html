@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>干饭罗盘 🧭 三大难题终结者</title>
+<style>
+:root{
+  --bg:#FAF5EC; --card:#FFFFFF; --ink:#3D3229; --sub:#93836F;
+  --acc:#FF6B35; --acc-soft:#FFE8DC; --ok:#2F9E44; --line:#EFE4D3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-tap-highlight-color:transparent}
+#app{max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:86px}
+header{display:flex;align-items:center;gap:8px;padding:14px 16px 4px}
+.brand{font-size:20px;font-weight:800;letter-spacing:.5px}
+.brand small{display:block;font-size:10px;font-weight:500;color:var(--sub);letter-spacing:0}
+#dateLine{margin-left:auto;font-size:12px;color:var(--sub)}
+#milkTeaBtn{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;color:var(--acc)}
+#mealTabs{display:flex;gap:6px;padding:10px 12px 2px}
+.mtab{flex:1;padding:9px 0;border-radius:999px;background:#fff;border:1.5px solid var(--line);font-size:14px;text-align:center;color:var(--ink);cursor:pointer}
+.mtab.on{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:800}
+.mtab small{display:block;font-size:9px;opacity:.75;font-weight:400}
+.card{background:var(--card);border-radius:18px;padding:18px;margin:10px 12px;box-shadow:0 2px 12px rgba(90,55,20,.06)}
+.hint{font-size:12px;color:var(--sub);margin:2px 16px 0}
+.mealTitle{font-size:13px;font-weight:700;color:var(--acc);margin-bottom:10px}
+.bigcard{text-align:center}
+.bigemoji{font-size:44px;line-height:1.2}
+.bigname{font-size:23px;font-weight:800;margin-top:4px}
+.recs{font-size:13px;color:var(--sub);margin-top:2px}
+.info{color:var(--sub);font-size:13px;margin-top:8px}
+.info b{color:var(--ink)}
+.wishMark{position:absolute}
+.btnrow{display:flex;gap:8px;margin-top:16px}
+.btn{flex:1;padding:12px 0;border:none;border-radius:14px;font-size:15px;font-weight:800;background:var(--acc);color:#fff;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.small{padding:8px 0;font-size:13px;border-radius:11px}
+.minirow{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.mini{border:none;background:none;font-size:13px;color:var(--sub);cursor:pointer;text-decoration:underline dotted}
+.mini.on{color:var(--acc);font-weight:700}
+.backsWrap{margin:10px 12px 0}
+.backsWrap h4{font-size:11px;color:var(--sub);font-weight:600;margin:0 0 6px 4px}
+.backs{display:flex;gap:8px}
+.back{flex:1;background:#fff;border-radius:14px;padding:10px 8px;font-size:13px;text-align:center;border:1.5px solid var(--line);cursor:pointer}
+.back .e{font-size:20px}
+.back .n{font-weight:700;margin-top:2px}
+.back .p{font-size:11px;color:var(--sub);margin-top:2px}
+.notice{background:#FFF4E0;border-radius:12px;padding:8px 12px;font-size:12px;color:#9A6B1F;margin:10px 12px 0}
+details.filters{margin:12px;background:#fff;border-radius:16px;padding:12px 14px;font-size:13px}
+details.filters summary{font-weight:800;cursor:pointer;list-style:none}
+details.filters summary::after{content:" ▾";color:var(--sub)}
+details.filters[open] summary::after{content:" ▴"}
+.fgroup{margin-top:10px}
+.fgroup .lb{font-size:11px;color:var(--sub);margin-bottom:2px}
+.chip{display:inline-block;padding:6px 12px;border-radius:999px;background:var(--bg);border:1.5px solid var(--line);font-size:13px;margin:4px 4px 0 0;cursor:pointer;user-select:none}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700}
+.toggle{display:inline-block;padding:6px 12px;border-radius:999px;background:var(--bg);border:1.5px solid var(--line);font-size:13px;margin:4px 4px 0 0;cursor:pointer;user-select:none}
+.toggle.on{background:#3D3229;color:#fff;border-color:#3D3229}
+.statrow{display:flex;gap:8px}
+.stat{flex:1;background:#fff;border-radius:16px;padding:12px;text-align:center}
+.stat b{font-size:20px;display:block}
+.stat span{font-size:11px;color:var(--sub)}
+.toplist{margin-top:10px;font-size:13px;line-height:1.9}
+.loglist{margin-top:6px;font-size:13px}
+.logitem{display:flex;gap:8px;padding:9px 2px;border-bottom:1px dashed var(--line);align-items:baseline}
+.logitem .d{color:var(--sub);font-size:11px;min-width:52px}
+.logitem .m{color:var(--acc);font-size:11px;min-width:24px}
+.logitem .n{flex:1;font-weight:600}
+select,input[type=text],input[type=number]{padding:8px 10px;border-radius:10px;border:1.5px solid var(--line);font-size:14px;background:#fff;color:var(--ink);width:100%}
+.formrow{display:flex;gap:8px;margin-top:8px;align-items:center}
+.formrow>*{min-width:0}
+h3.sec{font-size:14px;font-weight:800;margin:16px 4px 6px}
+.plist{font-size:13px;line-height:2}
+.plist .pi{display:flex;align-items:center;gap:8px;border-bottom:1px dashed var(--line);padding:2px 0}
+.plist .pn{flex:1}
+.pbtn{border:none;background:none;color:var(--sub);cursor:pointer;font-size:14px}
+#bottomNav{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);z-index:50;max-width:520px;margin:0 auto}
+#bottomNav button{flex:1;padding:9px 0 14px;border:none;background:none;font-size:11px;color:var(--sub);cursor:pointer}
+#bottomNav button .ic{display:block;font-size:20px}
+#bottomNav button.on{color:var(--acc);font-weight:800}
+#overlay{position:fixed;inset:0;background:rgba(50,30,15,.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+#overlay[hidden]{display:none}
+.sheet{background:var(--bg);border-radius:22px;padding:20px;max-width:360px;width:100%;text-align:center}
+#wheelCanvas{width:300px;height:300px;max-width:78vw;max-height:78vw}
+#toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:rgba(40,25,12,.85);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:200;max-width:86vw;text-align:center}
+.center{text-align:center}
+.dim{color:var(--sub);font-size:12px}
+.spacer{height:10px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">干饭罗盘 🧭<small>三大难题终结者</small></div>
+    <span id="dateLine"></span>
+    <button id="milkTeaBtn" data-act="milk">🧋 奶茶转盘</button>
+  </header>
+
+  <nav id="mealTabs"></nav>
+  <div class="hint" id="mealHint"></div>
+
+  <main>
+    <section id="viewDecide"></section>
+    <section id="viewLog" hidden></section>
+    <section id="viewSet" hidden></section>
+  </main>
+
+  <nav id="bottomNav">
+    <button data-act="tab" data-arg="decide" class="on"><span class="ic">🎲</span>决定</button>
+    <button data-act="tab" data-arg="log"><span class="ic">📖</span>记录</button>
+    <button data-act="tab" data-arg="set"><span class="ic">⚙️</span>设置</button>
+  </nav>
+</div>
+
+<div id="overlay" hidden>
+  <div class="sheet" id="sheetBody"></div>
+</div>
+<div id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+/* ================= 干饭罗盘 v0.1 =================
+ * 架构：内容后端 = data.js（git push 更新）｜个人后端 = localStorage（gf.* 键）
+ */
+const DATA = window.GANFAN_DATA;
+if (!DATA || !DATA.takeout) {
+  document.getElementById("viewDecide").innerHTML =
+    '<div class="card">⚠️ 没找到 data.js 或数据为空。请确认 data.js 和本文件在同一目录。</div>';
+  throw new Error("data.js missing");
+}
+
+/* ---------- 工具 ---------- */
+const $ = id => document.getElementById(id);
+const CAT_EMOJI = { "包子粥品":"🥟","西式快餐":"🍔","中式快餐":"🍚","面馆水饺":"🍜","特色小吃":"🍢","茶饮咖啡":"🧋","食堂":"🏫" };
+const TIER_TEXT = { gold:"🥇 6:00起送·稳", ontime:"🥈 6:30起送·可以", risky:"⚠️ 7:00起·压线", always:"⚡ 全天可送", none:"" };
+const TAGS_ALL = ["辣","清淡","实惠","贵","快","管饱","健康","甜","咖啡"];
+const REROLL_MAX = 5;
+
+function hashStr(s){ let h=1779033703^s.length; for(let i=0;i<s.length;i++){ h=Math.imul(h^s.charCodeAt(i),3432918353); h=(h<<13)|(h>>>19);} return h>>>0; }
+function mulberry32(a){ return function(){ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+function shortName(n){ return n.replace(/（.*?）|\(.*?\)/g,"") || n; }
+function catEmoji(p){ return CAT_EMOJI[p.cat] || "🍽️"; }
+function todayKey(d){ d=d||new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function addDays(n){ const d=new Date(); d.setDate(d.getDate()+n); return d; }
+function parseHM(s){ const [h,m]=s.split(":").map(Number); return h*60+(m||0); }
+function openAt(p, d){
+  const mins=d.getHours()*60+d.getMinutes();
+  return (p.hours||[]).some(r=>{ let s=parseHM(r[0]), e=parseHM(r[1]); if(e<=s) e+=1440; return mins>=s && mins<e; });
+}
+function toast(msg, ms){
+  const t=$("toast"); t.textContent=msg; t.style.opacity=1;
+  clearTimeout(toast._h); toast._h=setTimeout(()=>t.style.opacity=0, ms||2200);
+}
+
+/* ---------- 个人数据（localStorage）---------- */
+function lsGet(k, def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function lsSet(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+const S = {
+  meal:null, tab:"decide", swapIdx:null, lastPickKey:null,
+  hist: lsGet("gf.history",[]),
+  wish: lsGet("gf.wishlist",[]),
+  black: lsGet("gf.blacklist",[]),
+  ratings: lsGet("gf.ratings",{}),
+  filters: Object.assign({price:0,dist:0,cats:[],tags:[],wishOnly:false,noToday:true,risky:false}, lsGet("gf.filters",{})),
+  daily: lsGet("gf.daily",{}),
+  custom: lsGet("gf.custom",[]),
+};
+function saveAll(){
+  lsSet("gf.history",S.hist); lsSet("gf.wishlist",S.wish); lsSet("gf.blacklist",S.black);
+  lsSet("gf.ratings",S.ratings); lsSet("gf.filters",S.filters); lsSet("gf.daily",S.daily); lsSet("gf.custom",S.custom);
+}
+function allPlaces(){ return DATA.takeout.concat(S.custom); }
+function placeById(id){ return allPlaces().find(p=>p.id===id); }
+function isWish(p){ return S.wish.includes(p.id); }
+function isBan(p){ return S.black.includes(p.id); }
+
+/* ---------- 餐段 ---------- */
+function autoMeal(){
+  const h=new Date().getHours();
+  if(h>=5 && h<10) return "breakfast";
+  if(h>=10 && h<14) return "lunch";
+  if(h>=14 && h<21) return "dinner";
+  return "latenight";
+}
+function mealIsTomorrow(){ return S.meal==="breakfast" && new Date().getHours()>=21; }
+function dailyKey(){ return todayKey(mealIsTomorrow()?addDays(1):new Date())+"|"+S.meal; }
+
+/* ---------- 池子构建 ---------- */
+function weightOf(p){
+  let w=1;
+  if(isWish(p)) w*=2;
+  const r=S.ratings[p.id];
+  if(r>0) w*=1.3; else if(r<0) w*=0.5;
+  const n=weekCount(p.id);
+  if(n>0) w/= (1+0.5*n);
+  return w;
+}
+function eatenToday(id){ return S.hist.some(h=>h.d===todayKey() && h.id===id); }
+function weekCount(id){
+  const cutoff=Date.now()-7*864e5;
+  return S.hist.filter(h=>h.id===id && new Date(h.d+"T12:00:00").getTime()>=cutoff).length;
+}
+function applyHardFilters(pool, meal){
+  const f=S.filters;
+  if(f.price) pool=pool.filter(p=>(p.price||0)<=f.price);
+  if(f.dist) pool=pool.filter(p=>(p.distKm||0)<=f.dist);
+  if(f.cats.length) pool=pool.filter(p=>f.cats.includes(p.cat));
+  if(f.tags.length) pool=pool.filter(p=>f.tags.some(t=>(p.tags||[]).includes(t)));
+  if(f.wishOnly) pool=pool.filter(p=>isWish(p));
+  return pool;
+}
+function buildPool(meal){
+  const f=S.filters;
+  let pool=allPlaces().filter(p=>!isBan(p));
+  if(meal==="breakfast"){
+    const tiers=DATA.meals.breakfast.tiers;
+    pool=pool.filter(p=>tiers.includes(p.tier||"none") || (f.risky && p.tier==="risky"));
+  }else{
+    pool=pool.filter(p=>p.cat!=="茶饮咖啡");
+    pool=pool.filter(p=>!p.meals || p.meals.includes(meal));
+  }
+  pool=applyHardFilters(pool, meal);
+  let notice="";
+  if(f.noToday){
+    const rest=pool.filter(p=>!eatenToday(p.id));
+    if(rest.length>0) pool=rest;
+    else notice="今天吃过的把池子吃空了，本轮先把它们放回来了 🤷";
+  }
+  if(meal==="lunch"||meal==="dinner"){
+    const open=pool.filter(p=>openAt(p,new Date()));
+    if(open.length>=3) pool=open;
+  }
+  if(meal==="latenight"){
+    let open=pool.filter(p=>openAt(p,new Date()));
+    if(open.length===0){
+      open=pool.filter(p=>p.tier==="always");
+      if(open.length) notice="这个点基本全打烊了，只剩 24 小时店撑场面 🌃";
+    }
+    if(open.length) pool=open;
+  }
+  return { pool, notice };
+}
+function drinkPool(){ return allPlaces().filter(p=>p.cat==="茶饮咖啡" && !isBan(p)); }
+
+/* ---------- 每日一推（日期做种，当天固定）---------- */
+function weightedIndex(arr, rng){
+  const ws=arr.map(weightOf); let total=0; ws.forEach(w=>total+=w);
+  let r=rng()*total;
+  for(let i=0;i<arr.length;i++){ r-=ws[i]; if(r<=0) return i; }
+  return arr.length-1;
+}
+function getPicks(){
+  const key=dailyKey();
+  const rec=S.daily[key]||(S.daily[key]={n:0,seen:[]});
+  const {pool,notice}=buildPool(S.meal);
+  const unseen=pool.filter(p=>!rec.seen.includes(p.id));
+  const use=unseen.length>=3?unseen:pool;
+  const rng=mulberry32(hashStr(key+"|"+rec.n+"|ganfan"));
+  const arr=use.slice(); const picks=[];
+  for(let k=0;k<3 && arr.length;k++){ const i=weightedIndex(arr,rng); picks.push(arr[i]); arr.splice(i,1); }
+  return { main:picks[0]||null, backs:picks.slice(1), notice };
+}
+function currentPicks(){
+  const key=dailyKey();
+  if(S.lastPickKey!==key){ S.lastPickKey=key; S.swapIdx=null; S.cache=null; }
+  if(!S.cache) S.cache=getPicks();
+  return S.cache;
+}
+function doReroll(){
+  const key=dailyKey(); const rec=S.daily[key]||(S.daily[key]={n:0,seen:[]});
+  const cur=currentPicks().main;
+  if(rec.n>=REROLL_MAX){ toast("天意已定！去吃「"+shortName(cur?cur.name:"它")+"」吧 🙏"); return; }
+  if(cur) rec.seen.push(cur.id);
+  rec.n++;
+  saveAll(); S.cache=null; S.swapIdx=null; renderDecide();
+}
+
+/* ---------- 记录 ---------- */
+function logPlace(p, meal){
+  if(!p) return;
+  const m=meal||S.meal;
+  if(S.hist.some(h=>h.d===todayKey() && h.m===m && h.id===p.id)){ toast("这顿已经记过啦，别重复算钱 😄"); return; }
+  S.hist.push({ d:todayKey(), m, id:p.id, name:p.name, r:0 });
+  saveAll(); renderLog();
+}
+
+/* ---------- 渲染：主界面 ---------- */
+function renderTabs(){
+  const order=["breakfast","lunch","dinner","latenight"];
+  $("mealTabs").innerHTML=order.map(m=>{
+    const mm=DATA.meals[m];
+    return '<button class="mtab'+(S.meal===m?" on":"")+'" data-act="meal" data-arg="'+m+'">'
+      + mm.emoji+mm.label+'<small>'+(m==="latenight"?"21点后":"")+'</small></button>';
+  }).join("");
+  const hint=DATA.meals[S.meal];
+  let h=hint.emoji+" "+hint.label;
+  if(mealIsTomorrow()) h+=" · 明早吃什么（现在是晚上，答案按明天算）";
+  if(S.meal==="breakfast") h+=" · 只推 7:15 前能送到的档";
+  if(S.meal==="latenight") h+=" · 只看现在还开着的店";
+  $("mealHint").textContent=h;
+}
+function placeLine(p){
+  const bits=[];
+  bits.push("¥"+(p.price??"?")+" 人均");
+  if(p.distKm) bits.push(p.distKm.toFixed(2)+"km");
+  const tier=TIER_TEXT[p.tier]; if(tier) bits.push(tier);
+  return bits.join(" · ");
+}
+function cardHTML(p){
+  if(!p) return '<div class="card bigcard"><div class="bigemoji">🫙</div><div class="bigname">池子空了</div><div class="info">放宽下面的筛选试试</div></div>';
+  const wish=isWish(p);
+  return '<div class="card bigcard">'
+    +'<div class="bigemoji">'+catEmoji(p)+'</div>'
+    +'<div class="bigname">'+p.name+'</div>'
+    +(p.recs?'<div class="recs">'+p.recs+'</div>':"")
+    +'<div class="info"><b>'+placeLine(p)+"</b>"+((p.tags&&p.tags.length)?" · "+p.tags.map(t=>"#"+t).join(" "):"")+'</div>'
+    +(p.note?'<div class="info dim">'+p.note+'</div>':"")
+    +'<div class="btnrow">'
+      +'<button class="btn ghost" data-act="reroll">换一个</button>'
+      +'<button class="btn" data-act="wheel">🎯 转盘</button>'
+    +'</div>'
+    +'<div class="btnrow"><button class="btn small" data-act="log" style="background:var(--ok)">就吃它 · 记一笔 ✓</button></div>'
+    +'<div class="minirow">'
+      +'<button class="mini'+(wish?" on":"")+'" data-act="wish">'+(wish?"❤️ 已收藏":"🤍 收进心愿单")+'</button>'
+      +'<button class="mini" data-act="ban">🚫 拉黑</button>'
+    +'</div>'
+  +'</div>';
+}
+function filtersHTML(){
+  const f=S.filters;
+  const chip=(on,act,arg,label)=>'<span class="chip'+(on?" on":"")+'" data-act="'+act+'" data-arg="'+arg+'">'+label+"</span>";
+  let h='<details class="filters"'+(S.filtersOpen?" open":"")+' ontoggle="S.filtersOpen=this.open"><summary>🎛 筛选与开关</summary>';
+  h+='<div class="fgroup"><div class="lb">价格上限</div>'
+    +chip(!f.price,"fprice",0,"不限")+chip(f.price===15,"fprice",15,"≤15")+chip(f.price===25,"fprice",25,"≤25")+chip(f.price===40,"fprice",40,"≤40")+"</div>";
+  h+='<div class="fgroup"><div class="lb">距离上限</div>'
+    +chip(!f.dist,"fdist",0,"不限")+chip(f.dist===1.5,"fdist",1.5,"≤1.5km·星悦荟圈")+chip(f.dist===2.5,"fdist",2.5,"≤2.5km")+chip(f.dist===4.3,"fdist",4.3,"都能送")+"</div>";
+  const cats=[...new Set(allPlaces().map(p=>p.cat))];
+  h+='<div class="fgroup"><div class="lb">品类（不选=全要）</div>'+cats.map(c=>chip(f.cats.includes(c),"fcat",c,CAT_EMOJI[c]+" "+c)).join("")+"</div>";
+  h+='<div class="fgroup"><div class="lb">口味标签（命中其一即可）</div>'+TAGS_ALL.map(t=>chip(f.tags.includes(t),"ftag",t,"#"+t)).join("")+"</div>";
+  h+='<div class="fgroup"><div class="lb">开关</div>'
+    +'<span class="toggle'+(f.wishOnly?" on":"")+'" data-act="ftog" data-arg="wishOnly">❤️ 只看心愿单</span>'
+    +'<span class="toggle'+(f.noToday?" on":"")+'" data-act="ftog" data-arg="noToday">🚫排除今天吃过的</span>'
+    +'<span class="toggle'+(f.risky?" on":"")+'" data-act="ftog" data-arg="risky">🎰 早餐赌一把（含压线档）</span></div>';
+  return h+"</details>";
+}
+function renderDecide(){
+  const picks=currentPicks();
+  const rec=S.daily[dailyKey()]||{n:0};
+  let h="";
+  if(picks.notice) h+='<div class="notice">'+picks.notice+'</div>';
+  const mealLabel=(mealIsTomorrow()?"明早早餐 · ":"今日"+DATA.meals[S.meal].label+" · ")
+    +"第"+(rec.n+1)+"发"+(rec.n>=REROLL_MAX?"（天意已锁）":"");
+  if(S.swapIdx!=null && picks.backs.length){
+    const old=picks.main;
+    picks.main=picks.backs[S.swapIdx];
+    picks.backs=[old].concat(picks.backs.filter((_,i)=>i!==S.swapIdx));
+    S.swapIdx=null;
+  }
+  const main=picks.main, backs=picks.backs;
+  h+='<div class="mealTitle" style="margin:14px 16px 0">'+mealLabel+"</div>";
+  h+=cardHTML(main);
+  if(backs.length){
+    h+='<div class="backsWrap"><h4>备选（点一下换成主推）</h4><div class="backs">'
+      +backs.map((b,i)=>'<div class="back" data-act="swap" data-arg="'+i+'"><div class="e">'+catEmoji(b)+'</div><div class="n">'+shortName(b.name)+'</div><div class="p">¥'+(b.price??"?")+" · "+(b.distKm?b.distKm.toFixed(1)+"km":"自备")+"</div></div>").join("")
+      +"</div></div>";
+  }
+  h+=filtersHTML();
+  $("viewDecide").innerHTML=h;
+}
+
+/* ---------- 渲染：记录页 ---------- */
+function renderLog(){
+  const week=S.hist.filter(h=>new Date(h.d+"T12:00:00").getTime()>=Date.now()-7*864e5);
+  let spend=0; const count={};
+  week.forEach(h=>{ const p=placeById(h.id); if(p&&p.price) spend+=p.price; count[h.name]=(count[h.name]||0)+1; });
+  const top=Object.entries(count).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  let h='<div class="statrow" style="margin:14px 12px 0">'
+    +'<div class="stat"><b>'+week.length+'</b><span>近7天餐数</span></div>'
+    +'<div class="stat"><b>¥'+spend+'</b><span>近7天外卖估算</span></div>'
+    +'<div class="stat"><b>'+Object.keys(count).length+'</b><span>吃过几家</span></div></div>';
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 4px">🔥 本周之最</h3>';
+  h+=top.length?'<div class="toplist">'+top.map(t=>t[0]+" ×"+t[1]).join("<br>")+"</div>":'<div class="dim">还没有记录，抽到一个点了「就吃它」才算数</div>';
+  h+='<h3 class="sec">流水</h3><div class="loglist">';
+  const recent=S.hist.slice(-20).reverse();
+  h+=recent.length?recent.map(x=>{
+    const mm=DATA.meals[x.m]||{label:x.m};
+    return '<div class="logitem"><span class="d">'+x.d.slice(5)+'</span><span class="m">'+mm.label.slice(0,1)+'</span><span class="n">'+x.name+'</span><span>'+(x.r>0?"👍":x.r<0?"👎":"")+'</span></div>';
+  }).join(""):'<span class="dim">暂无</span>';
+  h+='</div><div class="formrow"><select id="backfillSel">'
+    +allPlaces().map(p=>'<option value="'+p.id+'">'+p.name+"</option>").join("")
+    +'</select><button class="btn ghost small" style="flex:0 0 92px" data-act="backfill">补一笔</button></div></div>';
+  $("viewLog").innerHTML=h;
+}
+
+/* ---------- 渲染：设置页 ---------- */
+function renderSet(){
+  const stalls=(DATA.canteen&&DATA.canteen.stalls)||[];
+  let h='<div class="card">'
+    +'<h3 class="sec" style="margin:0 0 4px">📋 数据版本</h3>'
+    +'<div class="dim">data.js v'+DATA.version+" · 更新于 "+DATA.updatedAt+'<br>外卖 '+DATA.takeout.length+" 家 · 食堂窗口 "+stalls.length+" 个（开学请早） · 自定义 "+S.custom.length+' 条</div>'
+    +'<div class="spacer"></div><div class="dim">改 data.js → git push → 一分钟生效。个人数据只存在本机浏览器。</div></div>';
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">❤️ 心愿单（抽中概率×2）</h3><div class="plist">';
+  h+=S.wish.length?S.wish.map(id=>{const p=placeById(id);return p?'<div class="pi"><span>'+catEmoji(p)+'</span><span class="pn">'+p.name+'</span><button class="pbtn" data-act="unwish" data-arg="'+id+'">✕</button></div>':""}).join(""):'<span class="dim">空。抽卡结果下面有收藏按钮。</span>';
+  h+='</div></div>';
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">🚫 黑名单（永不推荐）</h3><div class="plist">';
+  h+=S.black.length?S.black.map(id=>{const p=placeById(id);return p?'<div class="pi"><span class="pn">'+p.name+'</span><button class="pbtn" data-act="unban" data-arg="'+id+'">✕</button></div>':""}).join(""):'<span class="dim">空</span>';
+  h+='</div><div class="formrow"><select id="banSel">'+allPlaces().filter(p=>!isBan(p)).map(p=>'<option value="'+p.id+'">'+p.name+"</option>").join("")+'</select><button class="btn ghost small" style="flex:0 0 72px" data-act="doban">拉黑</button></div></div>';
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">➕ 加个自定义选项</h3><div class="formrow"><input type="text" id="cusName" placeholder="比如：小卖部关东煮"></div>'
+    +'<div class="formrow"><select id="cusCat">'+["特色小吃","中式快餐","西式快餐","面馆水饺","包子粥品"].map(c=>"<option>"+c+"</option>").join("")+'</select>'
+    +'<input type="number" id="cusPrice" placeholder="人均¥" style="flex:0 0 90px">'
+    +'<button class="btn ghost small" style="flex:0 0 72px" data-act="addcustom">添加</button></div>'
+    +(S.custom.length?'<div class="plist">'+S.custom.map(p=>'<div class="pi"><span>'+catEmoji(p)+'</span><span class="pn">'+p.name+'</span><button class="pbtn" data-act="delcustom" data-arg="'+p.id+'">✕</button></div>').join("")+"</div>":"")
+    +"</div>";
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">💾 个人数据</h3>'
+    +'<div class="btnrow"><button class="btn ghost small" data-act="export">导出备份</button>'
+    +'<button class="btn ghost small" data-act="import">导入备份</button></div>'
+    +'<input type="file" id="importFile" accept=".json" hidden>'
+    +'<div class="spacer"></div><button class="btn ghost small" style="width:100%;color:#C92A2A" data-act="wipe">清空全部个人数据</button></div>';
+  $("viewSet").innerHTML=h;
+}
+
+/* ---------- 转盘 ---------- */
+const wheel={pool:[],rot:0,spinning:false,winner:null,sameId:null,sameN:0};
+const PALETTE=["#FFD8A8","#FFC078","#FFA94D","#FF8787","#F783AC","#B197FC","#74C0FC","#63E6BE","#A9E34B","#FFD43B","#FFB4A2","#B2F2BB"];
+function openWheel(pool){
+  pool=pool.filter(p=>!isBan(p));
+  if(pool.length<2){ toast("候选太少，转不动，放宽筛选吧"); return; }
+  wheel.pool=[...pool].sort((a,b)=>weightOf(b)-weightOf(a)).slice(0,12);
+  $("overlay").hidden=false;
+  $("sheetBody").innerHTML='<div style="font-weight:800;font-size:16px;margin-bottom:10px">🎯 天意转盘 · '+wheel.pool.length+' 进 1</div>'
+    +'<canvas id="wheelCanvas"></canvas>'
+    +'<div class="btnrow"><button class="btn ghost" data-act="closeWheel">关掉</button><button class="btn" data-act="spin">转起来！</button></div>';
+  drawWheel(0);
+}
+function drawWheel(rot){
+  const cv=$("wheelCanvas"); if(!cv) return;
+  const dpr=window.devicePixelRatio||1, size=300;
+  cv.width=size*dpr; cv.height=size*dpr;
+  const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const cx=size/2, cy=size/2, R=size/2-8, n=wheel.pool.length, seg=2*Math.PI/n;
+  ctx.clearRect(0,0,size,size);
+  for(let i=0;i<n;i++){
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R,i*seg+rot,(i+1)*seg+rot);
+    ctx.closePath(); ctx.fillStyle=PALETTE[i%PALETTE.length]; ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.9)"; ctx.lineWidth=2; ctx.stroke();
+  }
+  ctx.fillStyle="#3D3229"; ctx.textAlign="right"; ctx.font="bold 12px -apple-system,'PingFang SC',sans-serif";
+  for(let i=0;i<n;i++){
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(i*seg+seg/2+rot);
+    ctx.fillText(shortName(wheel.pool[i].name).slice(0,7), R-10, 4);
+    ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(cx,cy,26,0,2*Math.PI); ctx.fillStyle="#fff"; ctx.fill();
+  ctx.strokeStyle="#FF6B35"; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle="#FF6B35"; ctx.font="bold 14px sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText("GO", cx, cy+1);
+  ctx.beginPath(); ctx.moveTo(cx-12,6); ctx.lineTo(cx+12,6); ctx.lineTo(cx,24); ctx.closePath();
+  ctx.fillStyle="#3D3229"; ctx.fill();
+}
+function spinWheel(){
+  if(wheel.spinning||!wheel.pool.length) return;
+  wheel.spinning=true;
+  const n=wheel.pool.length, seg=2*Math.PI/n;
+  const idx=Math.floor(Math.random()*n);
+  const base=3*Math.PI/2-(idx*seg+seg/2);
+  const target=base+Math.PI*2*5+(Math.random()-0.5)*seg*0.5;
+  const t0=performance.now(), dur=4000, start=wheel.rot;
+  const total=start+target;
+  function frame(t){
+    const p=Math.min(1,(t-t0)/dur), ease=1-Math.pow(1-p,3);
+    wheel.rot=start+(total-start)*ease;
+    drawWheel(wheel.rot);
+    if(p<1) requestAnimationFrame(frame);
+    else{
+      wheel.spinning=false; wheel.winner=wheel.pool[idx];
+      if(wheel.sameId===wheel.winner.id) wheel.sameN++; else {wheel.sameId=wheel.winner.id; wheel.sameN=1;}
+      let extra=wheel.sameN>=3?'<div class="notice" style="margin-top:10px">🎲 连着三次都是它，这就是天意吧！</div>':"";
+      $("sheetBody").innerHTML='<div style="font-weight:800;font-size:15px;color:var(--acc)">天意选中了</div>'
+        +'<div style="font-size:36px;margin:6px 0 2px">'+catEmoji(wheel.winner)+"</div>"
+        +'<div style="font-size:22px;font-weight:800">'+wheel.winner.name+"</div>"
+        +'<div class="dim" style="margin-top:4px">'+placeLine(wheel.winner)+(wheel.winner.recs?" · "+wheel.winner.recs:"")+"</div>"+extra
+        +'<div class="btnrow"><button class="btn ghost" data-act="closeWheel">算了</button><button class="btn ghost" data-act="spin">再转一次</button></div>'
+        +'<div class="btnrow"><button class="btn" style="background:var(--ok)" data-act="wlog">就吃它 · 记一笔 ✓</button></div>'
+        +'<div class="minirow"><button class="mini" data-act="wwish">🤍 收心愿单</button><button class="mini" data-act="wban">🚫 拉黑它</button></div>';
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- 事件 ---------- */
+document.addEventListener("click", e=>{
+  const el=e.target.closest("[data-act]"); if(!el) return;
+  const act=el.dataset.act, arg=el.dataset.arg;
+  switch(act){
+    case "meal": S.meal=arg; S.cache=null; S.swapIdx=null; S.lastPickKey=null; renderTabs(); renderDecide(); if(S.tab!=="decide") switchTab("decide"); break;
+    case "tab": switchTab(arg); break;
+    case "reroll": doReroll(); break;
+    case "swap": S.swapIdx=+arg; renderDecide(); break;
+    case "log": { const p=currentPicks().main; logPlace(p); toast("记好啦，干饭愉快 🍚"); renderDecide(); break; }
+    case "wish": { const p=currentPicks().main; if(p){ toggleArr("gf.wishlist",S.wish,p.id); renderDecide(); } break; }
+    case "ban": { const p=currentPicks().main; if(p){ toggleArr("gf.blacklist",S.black,p.id); S.cache=null; renderDecide(); toast("已拉黑，眼不见为净"); } break; }
+    case "wheel": { const {pool}=buildPool(S.meal); openWheel(pool); break; }
+    case "milk": openWheel(drinkPool()); break;
+    case "spin": spinWheel(); break;
+    case "closeWheel": $("overlay").hidden=true; break;
+    case "wlog": logPlace(wheel.winner); $("overlay").hidden=true; toast("记好啦，干饭愉快 🍚"); break;
+    case "wwish": if(wheel.winner) toggleArr("gf.wishlist",S.wish,wheel.winner.id); break;
+    case "wban": if(wheel.winner){ toggleArr("gf.blacklist",S.black,wheel.winner.id); toast("已拉黑"); } break;
+    case "backfill": { const p=placeById($("backfillSel").value); logPlace(p); toast("补上啦"); break; }
+    case "unwish": S.wish=S.wish.filter(x=>x!==arg); saveAll(); renderSet(); break;
+    case "unban": S.black=S.black.filter(x=>x!==arg); saveAll(); S.cache=null; renderSet(); break;
+    case "doban": { const id=$("banSel").value; if(id&&!S.black.includes(id)){ S.black.push(id); saveAll(); S.cache=null; renderSet(); } break; }
+    case "addcustom": {
+      const name=$("cusName").value.trim(); if(!name){ toast("先起个名字"); break; }
+      S.custom.push({ id:"u"+Date.now(), name, cat:$("cusCat").value, price:+$("cusPrice").value||0, distKm:0, tags:["实惠"], meals:["lunch","dinner"], hours:[["00:00","24:00"]], tier:"none" });
+      saveAll(); renderSet(); toast("加上了，午饭晚饭都能抽到");
+      break;
+    }
+    case "delcustom": S.custom=S.custom.filter(p=>p.id!==arg); saveAll(); renderSet(); break;
+    case "fprice": S.filters.price=+arg; saveAll(); S.cache=null; renderDecide(); break;
+    case "fdist": S.filters.dist=+arg; saveAll(); S.cache=null; renderDecide(); break;
+    case "fcat": { const i=S.filters.cats.indexOf(arg); i>=0?S.filters.cats.splice(i,1):S.filters.cats.push(arg); saveAll(); S.cache=null; renderDecide(); break; }
+    case "ftag": { const i=S.filters.tags.indexOf(arg); i>=0?S.filters.tags.splice(i,1):S.filters.tags.push(arg); saveAll(); S.cache=null; renderDecide(); break; }
+    case "ftog": S.filters[arg]=!S.filters[arg]; saveAll(); S.cache=null; renderDecide(); break;
+    case "export": {
+      const blob=new Blob([JSON.stringify({history:S.hist,wishlist:S.wish,blacklist:S.black,ratings:S.ratings,filters:S.filters,daily:S.daily,custom:S.custom},null,2)],{type:"application/json"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="ganfan-backup-"+todayKey()+".json"; a.click();
+      break;
+    }
+    case "import": $("importFile").click(); break;
+    case "wipe": if(confirm("真的要清空全部记录/心愿单/黑名单？")) if(confirm("最后一次确认：清空后无法恢复！")){ ["gf.history","gf.wishlist","gf.blacklist","gf.ratings","gf.filters","gf.daily","gf.custom"].forEach(k=>localStorage.removeItem(k)); location.reload(); } break;
+  }
+});
+function toggleArr(key, arr, id){
+  const i=arr.indexOf(id);
+  if(i>=0) arr.splice(i,1); else arr.push(id);
+  saveAll();
+}
+function switchTab(t){
+  S.tab=t;
+  ["decide","log","set"].forEach(x=>{ $("view"+{decide:"Decide",log:"Log",set:"Set"}[x]).hidden = x!==t; });
+  document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.toggle("on", b.dataset.arg===t));
+  if(t==="log") renderLog(); if(t==="set") renderSet();
+}
+document.addEventListener("change", e=>{
+  if(e.target.id==="importFile"){
+    const f=e.target.files[0]; if(!f) return;
+    const rd=new FileReader();
+    rd.onload=()=>{ try{
+      const j=JSON.parse(rd.result);
+      if(j.history) lsSet("gf.history",j.history); if(j.wishlist) lsSet("gf.wishlist",j.wishlist);
+      if(j.blacklist) lsSet("gf.blacklist",j.blacklist); if(j.ratings) lsSet("gf.ratings",j.ratings);
+      if(j.filters) lsSet("gf.filters",j.filters); if(j.daily) lsSet("gf.daily",j.daily); if(j.custom) lsSet("gf.custom",j.custom);
+      location.reload();
+    }catch(err){ toast("文件不对，导入失败"); } };
+    rd.readAsText(f);
+  }
+});
+
+/* ---------- 启动 ---------- */
+(function init(){
+  const wd=["周日","周一","周二","周三","周四","周五","周六"];
+  const d=new Date();
+  $("dateLine").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日 · "+wd[d.getDay()];
+  S.meal=autoMeal();
+  renderTabs(); renderDecide();
+  if(new Date().getHours()>=21 && S.meal==="latenight"){
+    setTimeout(()=>toast("🌙 宵夜模式。或者看看「早餐」页，明早吃什么已经备好了"), 600);
+  }
+})();
+</script>
+</body>
+</html>
