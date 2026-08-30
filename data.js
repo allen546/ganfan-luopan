@@ -12,11 +12,13 @@
  *   hours  营业时间 [[开始,结束],...]，24小时制，"24:00"=到午夜；跨天如 06:00-02:00 直接写 ["06:00","02:00"]
  *   tier   早餐档位：gold=06:00起送(稳) / ontime=06:30起送(可以) / risky=07:00起(压线) / always=全天可送 / none=不做早餐
  *   tags   标签，可选项：辣 / 清淡 / 实惠 / 贵 / 快 / 管饱 / 健康 / 甜 / 咖啡
+ *   img    店铺图片 URL【坑位已留好】——高德地图 API 返回的 alicdn 图片链接，填进来应用就会显示；
+ *          留空或不写 = 不显示图片。食堂窗口条目同样支持。
  *   recs   招牌推荐（显示在结果卡上）
  *   note   备注
  */
 window.GANFAN_DATA = {
-  version: 1,
+  version: 2,
   updatedAt: "2026-08-30",
   school: "北京一零一中学(圆明园校区)",
 
@@ -25,7 +27,6 @@ window.GANFAN_DATA = {
     breakfast: { label: "早餐", emoji: "🌅", pool: ["takeout"], tiers: ["gold", "ontime", "always"] },
     lunch:     { label: "午餐", emoji: "☀️", pool: ["takeout", "canteen", "custom"] },
     dinner:    { label: "晚餐", emoji: "🌙", pool: ["takeout", "canteen", "custom"] },
-    latenight: { label: "宵夜", emoji: "🌌", pool: ["takeout"] },
   },
 
   // ---------------- 外卖池（来自 2026-08 高德实测报告，53 家）----------------
@@ -100,8 +101,8 @@ window.GANFAN_DATA = {
   // ---------------- 食堂（开学后补充）----------------
   canteen: {
     stalls: [
-      // 开学后照这个格式加窗口。days=周几开（1=周一…7=周日），不写=每天都开
-      // { id: "c1-malatang", name: "一食堂·麻辣香锅窗口", price: 15, tags: ["辣","管饱"], menu: ["自选香锅","米饭"], days: [1,2,3,4,5] },
+      // 开学后照这个格式加窗口。days=周几开（1=周一…7=周日），不写=每天都开；img 同样可以贴 alicdn 图片链接
+      // { id: "c1-malatang", name: "一食堂·麻辣香锅窗口", price: 15, tags: ["辣","管饱"], menu: ["自选香锅","米饭"], days: [1,2,3,4,5], img: "" }
     ]
   },
 
