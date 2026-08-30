@@ -63,7 +63,11 @@ svg.ic{width:1.15em;height:1.15em;flex:none;vertical-align:-0.18em}
 .sideNav .navItem.on{background:rgba(0,0,0,.08);font-weight:600}
 .navIcon{width:19px;height:19px;flex:none;color:var(--sub)}
 .sideNav .navItem.on .navIcon{color:var(--ink)}
-.sideFoot{margin-top:auto;padding:12px 10px 0;font-size:11px;color:var(--sub);line-height:1.6}
+.sideFoot{margin-top:auto;padding:12px 10px 0;font-size:13px;line-height:1.6}
+.sideLink{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;font-size:14px;font-weight:500;color:var(--sub);text-decoration:none}
+.sideLink svg{width:17px;height:17px}
+.sideLink:hover{background:rgba(0,0,0,.045);color:var(--ink)}
+a.btn{text-decoration:none}
 
 /* ---------- 主区 ---------- */
 main{min-width:0;padding:0 0 96px}
@@ -303,6 +307,7 @@ const P = {
   heart:'<path d="M12 20.3C7.4 16.8 3 13.5 3 9.2 3 6.4 5.2 4.5 7.7 4.5c1.8 0 3.3 1 4.3 2.5 1-1.5 2.5-2.5 4.3-2.5 2.5 0 4.7 1.9 4.7 4.7 0 4.3-4.4 7.6-9 11.1z"/>',
   ban:'<circle cx="12" cy="12" r="8.5"/><path d="M5.8 5.8l12.4 12.4"/>',
   thumbup:'<path d="M7 11v9"/><path d="M7 20h8.6c1.1 0 2-.7 2.3-1.7l1.3-5.2c.3-1.2-.6-2.4-1.9-2.4H12l.7-3.5c.3-1.5-.6-2.7-2-2.7L7 11"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4.5 7.5 12 13l7.5-5.5"/>',
   dice:'<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="8.7" cy="8.7" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.3" cy="8.7" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.7" cy="15.3" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.3" cy="15.3" r="1.3" fill="currentColor" stroke="none"/>',
   book:'<path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v17.5H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M5 19.5V4.5"/><path d="M9 7h6"/><path d="M9 10.5h6"/>',
   gear:'<circle cx="12" cy="12" r="3.2"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.3-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.5 2.3-1a7 7 0 0 0 2 1.2l.4 2.6h4l.4-2.6a7 7 0 0 0 2-1.2l2.3 1 2-3.5-2-1.5c.1-.4.1-.8.1-1.2z"/>'
@@ -320,6 +325,7 @@ const MEAL_ICON = { breakfast:"sunrise", lunch:"sun", dinner:"moon", drinks:"cup
 const TIER_TEXT = { gold:"6:00 起送 · 稳", ontime:"6:30 起送 · 可以", risky:"7:00 起 · 压线", always:"全天可送", none:"" };
 const TAGS_ALL = ["辣","清淡","实惠","贵","快","管饱","健康","甜","咖啡"];
 const REROLL_MAX = 5;
+const APP_VERSION = "0.3.5";
 
 function hashStr(s){ let h=1779033703^s.length; for(let i=0;i<s.length;i++){ h=Math.imul(h^s.charCodeAt(i),3432918353); h=(h<<13)|(h>>>19);} return h>>>0; }
 function mulberry32(a){ return function(){ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
@@ -637,11 +643,11 @@ function renderLog(){
 
 /* ---------- 渲染：设置页 ---------- */
 function renderSet(){
-  const stalls=(DATA.canteen&&DATA.canteen.stalls)||[];
   let h='<div class="eyebrow">设置</div>';
-  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">数据版本</h3>'
-    +'<div class="dim">data.js v'+DATA.version+" · 更新于 "+DATA.updatedAt+'<br>外卖 '+DATA.takeout.length+" 家 · 食堂窗口 "+stalls.length+" 个（开学请早） · 自定义 "+S.custom.length+' 条</div>'
-    +'<div class="spacer"></div><div class="dim">改 data.js 并 git push，一分钟后生效。个人数据只存在本机浏览器。</div></div>';
+  h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">关于干饭罗盘</h3>'
+    +'<div class="dim">三餐、宵夜加奶茶，抽签决定今天吃什么。答案每天每段锁定；你的记录只保存在这台设备的浏览器里，可随时导出备份。</div>'
+    +'<div class="btnrow"><a class="btn small" href="mailto:allen.haha@hotmail.com?subject=干饭罗盘反馈">'+svgp("mail")+'发邮件反馈</a></div>'
+    +'<div class="spacer"></div><div class="dim">版本 v'+APP_VERSION+"</div></div>";
   h+='<div class="card"><h3 class="sec" style="margin:0 0 6px">心愿单（抽中概率×2）</h3><div class="plist">';
   h+=S.wish.length?S.wish.map(id=>{const p=placeById(id);return p?'<div class="pi"><span class="pico">'+svgp(catIcon(p))+'</span><span class="pn">'+p.name+'</span><button class="pbtn" data-act="unwish" data-arg="'+id+'">移除</button></div>':""}).join(""):'<span class="dim">空。抽卡结果下面有收藏按钮。</span>';
   h+='</div></div>';
@@ -849,8 +855,7 @@ document.addEventListener("change", e=>{
   const brandHTML='<span class="bico">'+svgp("compass","bico")+'</span><span>干饭罗盘<small>三大难题终结者</small></span>';
   $("brandSide").innerHTML=brandHTML;
   $("brandMobile").innerHTML=brandHTML;
-  const stalls=(DATA.canteen&&DATA.canteen.stalls)||[];
-  $("sideFoot").innerHTML="data.js v"+DATA.version+" · "+DATA.updatedAt+"<br>外卖 "+DATA.takeout.length+" 家 · 食堂 "+stalls.length+" 窗口";
+  $("sideFoot").innerHTML='<a class="sideLink" href="mailto:allen.haha@hotmail.com?subject=干饭罗盘反馈">'+svgp("mail")+'发邮件反馈</a>';
   S.meal=autoMeal();
   renderTabs(); renderNav(); switchTab("decide");
 })();
