@@ -18,17 +18,18 @@
  *   note   备注
  */
 window.GANFAN_DATA = {
-  version: 4,
+  version: 5,
   updatedAt: "2026-08-30",
   school: "北京一零一中学(圆明园校区)",
 
   // 餐段定义。breakfast.tiers = 早餐段默认允许抽的档位（7:15 前送达硬约束）
-  // drinks 段只从 cat=="茶饮咖啡" 的条目里抽
+  // drinks 段只从 cat=="茶饮咖啡" 的条目里抽；latenight 段只出打烊前还开着的店
   meals: {
     breakfast: { label: "早餐", pool: ["takeout"], tiers: ["gold", "ontime", "always"] },
     lunch:     { label: "午餐", pool: ["takeout", "canteen", "custom"] },
     dinner:    { label: "晚餐", pool: ["takeout", "canteen", "custom"] },
     drinks:    { label: "饮料", pool: ["takeout"] },
+    latenight: { label: "宵夜", pool: ["takeout"] },
   },
 
   // ---------------- 外卖池（来自 2026-08 高德实测报告，55 家）----------------

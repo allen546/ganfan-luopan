@@ -289,6 +289,7 @@ const P = {
   sunrise:'<path d="M4 17.5h16"/><path d="M8 17.5a4 4 0 0 1 8 0"/><path d="M12 4v4"/><path d="M5.2 6.7 7 8.2"/><path d="M18.8 6.7 17 8.2"/>',
   sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.2"/><path d="M12 19v2.2"/><path d="M2.8 12H5"/><path d="M19 12h2.2"/><path d="M5 5l1.6 1.6"/><path d="M17.4 17.4 19 19"/><path d="M19 5l-1.6 1.6"/><path d="M6.6 17.4 5 19"/>',
   moon:'<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/>',
+  latenight:'<path d="M15.5 20A8 8 0 0 1 8.6 6.6 8 8 0 1 0 18 17.4z"/><path d="M17.5 4.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" fill="currentColor" stroke="none"/>',
   cup:'<path d="M7 8.5h10L15.9 20a1.5 1.5 0 0 1-1.5 1.3H9.6A1.5 1.5 0 0 1 8.1 20z"/><path d="M9.3 8.5V5.2a1.2 1.2 0 0 1 1.2-1.2H15"/><circle cx="11.2" cy="13.5" r=".8" fill="currentColor" stroke="none"/><circle cx="13.6" cy="16.3" r=".8" fill="currentColor" stroke="none"/>',
   bun:'<path d="M5.5 15.5a6.5 6.5 0 0 1 13 0"/><path d="M4.5 18.5h15"/><path d="M12 5.5v2.2"/><path d="M8.6 6.4l.8 2"/><path d="M15.4 6.4l-.8 2"/>',
   burger:'<path d="M4.5 9.5c0-2.8 3.4-5 7.5-5s7.5 2.2 7.5 5z"/><path d="M4.5 12.8h15"/><path d="M4.5 16.2c0 1.8 1.6 3.2 3.6 3.2h7.8c2 0 3.6-1.4 3.6-3.2v-.7h-15z"/>',
@@ -315,7 +316,7 @@ window.addEventListener("error", e=>{
 
 /* ---------- 常量 ---------- */
 const CAT_ICON = { "包子粥品":"bun","西式快餐":"burger","中式快餐":"ricebowl","面馆水饺":"noodles","特色小吃":"skewer","茶饮咖啡":"cup","食堂":"canteen" };
-const MEAL_ICON = { breakfast:"sunrise", lunch:"sun", dinner:"moon", drinks:"cup" };
+const MEAL_ICON = { breakfast:"sunrise", lunch:"sun", dinner:"moon", drinks:"cup", latenight:"latenight" };
 const TIER_TEXT = { gold:"6:00 起送 · 稳", ontime:"6:30 起送 · 可以", risky:"7:00 起 · 压线", always:"全天可送", none:"" };
 const TAGS_ALL = ["辣","清淡","实惠","贵","快","管饱","健康","甜","咖啡"];
 const REROLL_MAX = 5;
@@ -331,7 +332,11 @@ function addDays(n){ const d=new Date(); d.setDate(d.getDate()+n); return d; }
 function parseHM(s){ const [h,m]=s.split(":").map(Number); return h*60+(m||0); }
 function openAt(p, d){
   const mins=d.getHours()*60+d.getMinutes();
-  return (p.hours||[]).some(r=>{ let s=parseHM(r[0]), e=parseHM(r[1]); if(e<=s) e+=1440; return mins>=s && mins<e; });
+  return (p.hours||[]).some(r=>{
+    const s=parseHM(r[0]), e=parseHM(r[1]);
+    if(e<=s) return mins>=s || mins<e;   // 跨天档（如 06:00-02:00）：前半夜 + 后半夜都算
+    return mins>=s && mins<e;
+  });
 }
 function toast(msg, ms){
   const t=$("toast"); t.textContent=msg; t.style.opacity=1;
@@ -369,7 +374,8 @@ function autoMeal(){
   const h=new Date().getHours();
   if(h>=5 && h<10) return "breakfast";
   if(h>=10 && h<14) return "lunch";
-  return "dinner";   // 饮料段只手动切换
+  if(h>=14 && h<21) return "dinner";
+  return "latenight";
 }
 function mealIsTomorrow(){ return S.meal==="breakfast" && new Date().getHours()>=21; }
 function dailyKey(){ return todayKey(mealIsTomorrow()?addDays(1):new Date())+"|"+S.meal; }
@@ -420,6 +426,14 @@ function buildPool(meal){
   if(meal==="lunch"||meal==="dinner"||meal==="drinks"){
     const open=pool.filter(p=>openAt(p,new Date()));
     if(open.length>=3) pool=open;
+  }
+  if(meal==="latenight"){
+    let open=pool.filter(p=>openAt(p,new Date()));
+    if(open.length===0){
+      open=pool.filter(p=>p.tier==="always");
+      if(open.length) notice="这个点基本全打烊了，只剩 24 小时店撑场面";
+    }
+    if(open.length) pool=open;
   }
   return { pool, notice };
 }
@@ -497,20 +511,21 @@ function renderNav(){
     '<button class="navItem'+(S.tab===k?" on":"")+'" data-act="tab" data-arg="'+k+'">'+svg(paths,"navIcon")+l+"</button>").join("");
 }
 function renderTabs(){
-  const order=["breakfast","lunch","dinner","drinks"];
+  const order=["breakfast","lunch","dinner","drinks","latenight"];
   $("mealTabs").innerHTML=order.map(m=>{
     const mm=DATA.meals[m];
     return '<button class="mtab'+(S.meal===m?" on":"")+'" data-act="meal" data-arg="'+m+'">'+svgp(MEAL_ICON[m],"mico")+mm.label+"</button>";
   }).join("");
   $("mealTabsDesk").innerHTML=order.map(m=>{
     const mm=DATA.meals[m];
-    const hint=m==="breakfast"?"7:15前":m==="lunch"?"11点后":m==="dinner"?"17点后":"茶饮咖啡";
+    const hint=m==="breakfast"?"7:15前":m==="lunch"?"11点后":m==="dinner"?"17点后":m==="drinks"?"茶饮咖啡":"21点后";
     return '<button class="mealItem'+(S.meal===m?" on":"")+'" data-act="meal" data-arg="'+m+'">'+svgp(MEAL_ICON[m],"mico")+mm.label+'<span class="hint-s">'+hint+"</span></button>";
   }).join("");
   let h=DATA.meals[S.meal].label;
   if(mealIsTomorrow()) h+=" · 现在是晚上，按「明早」来算";
   if(S.meal==="breakfast") h+=" · 只推 7:15 前能送到的档";
   if(S.meal==="drinks") h+=" · 茶饮咖啡专区";
+  if(S.meal==="latenight") h+=" · 只看现在还开着的店";
   $("mealHint").textContent=h;
 }
 
@@ -561,12 +576,13 @@ function filtersChipsHTML(){
 function renderDecide(){
   const rec=S.daily[dailyKey()]||{n:0};
   if(!rec.drawn){
-    const icons={breakfast:"sunrise",lunch:"sun",dinner:"moon",drinks:"cup"};
+    const icons={breakfast:"sunrise",lunch:"sun",dinner:"moon",drinks:"cup",latenight:"latenight"};
     const titles={
       breakfast:(mealIsTomorrow()?"明早吃什么":"今天早餐吃什么"),
       lunch:"今天午餐吃什么",
       dinner:"今天晚餐吃什么",
-      drinks:"今天喝点什么"
+      drinks:"今天喝点什么",
+      latenight:"今天宵夜吃什么"
     };
     $("viewDecide").innerHTML=
       '<div class="ask">'
