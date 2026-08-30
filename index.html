@@ -667,11 +667,11 @@ function spinWheel(){
   const target=base+Math.PI*2*5+(Math.random()-0.5)*seg*0.5;
   const t0=performance.now(), dur=4000, start=wheel.rot;
   const total=start+target;
-  function frame(t){
-    const p=Math.min(1,(t-t0)/dur), ease=1-Math.pow(1-p,3);
+  function frame(){
+    const p=Math.min(1,(performance.now()-t0)/dur), ease=1-Math.pow(1-p,3);
     wheel.rot=start+(total-start)*ease;
     drawWheel(wheel.rot);
-    if(p<1) requestAnimationFrame(frame);
+    if(p<1) setTimeout(frame,16);
     else{
       wheel.spinning=false; wheel.winner=wheel.pool[idx];
       if(wheel.sameId===wheel.winner.id) wheel.sameN++; else {wheel.sameId=wheel.winner.id; wheel.sameN=1;}
@@ -685,7 +685,7 @@ function spinWheel(){
         +'<div class="minirow"><button class="mini" data-act="wwish">'+svg(P.heart)+'收心愿单</button><button class="mini" data-act="wban">'+svgp("ban")+'拉黑它</button></div>';
     }
   }
-  requestAnimationFrame(frame);
+  setTimeout(frame,16);
 }
 
 /* ---------- 页面切换 ---------- */
@@ -711,6 +711,11 @@ document.addEventListener("click", e=>{
     case "wish": { const p=currentPicks().main; if(p){ toggleArr("gf.wishlist",S.wish,p.id); renderDecide(); renderRail(); } break; }
     case "ban": { const p=currentPicks().main; if(p){ toggleArr("gf.blacklist",S.black,p.id); S.cache=null; renderDecide(); toast("已拉黑，眼不见为净"); } break; }
     case "wheel": { const {pool}=buildPool(S.meal); openWheel(pool); break; }
+    case "spin": spinWheel(); break;
+    case "closeWheel": $("overlay").hidden=true; break;
+    case "wlog": logPlace(wheel.winner); $("overlay").hidden=true; toast("记好啦，干饭愉快"); break;
+    case "wwish": if(wheel.winner) toggleArr("gf.wishlist",S.wish,wheel.winner.id); break;
+    case "wban": if(wheel.winner){ toggleArr("gf.blacklist",S.black,wheel.winner.id); toast("已拉黑"); } break;
     case "backfill": { const p=placeById($("backfillSel").value); logPlace(p); toast("补上啦"); break; }
     case "unwish": S.wish=S.wish.filter(x=>x!==arg); saveAll(); renderSet(); renderRail(); break;
     case "unban": S.black=S.black.filter(x=>x!==arg); saveAll(); S.cache=null; renderSet(); break;
