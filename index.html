@@ -214,7 +214,7 @@ h3.sec{font-size:13px;font-weight:600;color:var(--sub);margin:18px 4px 8px;lette
   box-shadow:0 18px 60px rgba(0,0,0,.25);animation:sheetIn 300ms cubic-bezier(.32,.72,0,1)}
 @keyframes sheetIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
 .sheet h5{font-size:13px;font-weight:600;color:var(--sub)}
-#wheelCanvas{width:min(380px,76vw);height:min(380px,76vw);margin:14px auto 4px;display:block}
+#wheelCanvas{width:min(560px,76vw,64vh);height:min(560px,76vw,64vh);margin:14px auto 4px;display:block}
 .winTile{width:64px;height:64px;border-radius:16px;background:var(--fill);display:flex;align-items:center;justify-content:center;margin:12px auto 0}
 .winTile svg{width:34px;height:34px;color:var(--ink)}
 .winName{font-size:23px;font-weight:700;letter-spacing:-0.02em;margin-top:4px}
@@ -359,9 +359,11 @@ const S = {
   black: lsGet("gf.blacklist",[]),
   ratings: lsGet("gf.ratings",{}),
   filters: Object.assign({price:0,dist:0,cats:[],tags:[],wishOnly:false,noToday:true,risky:false}, lsGet("gf.filters",{})),
-  daily: lsGet("gf.daily",{}),
+  daily: lsGet("gf.daily",{}),   // 只持久化「今天这餐抽过了没有」；重摇计数不落盘
   custom: lsGet("gf.custom",[]),
 };
+S.roll = {};        // 会话内：每餐段的重摇计数与已出答案，刷新即清（想靠刷新绕过就随他）
+S.drinkRound = 0;   // 会话内：饮料当天第几杯
 function saveAll(){
   lsSet("gf.history",S.hist); lsSet("gf.wishlist",S.wish); lsSet("gf.blacklist",S.black);
   lsSet("gf.ratings",S.ratings); lsSet("gf.filters",S.filters); lsSet("gf.daily",S.daily); lsSet("gf.custom",S.custom);
@@ -453,11 +455,12 @@ function weightedIndex(arr, rng){
 }
 function getPicks(){
   const key=dailyKey();
-  const rec=S.daily[key]||(S.daily[key]={n:0,seen:[]});
+  const roll=S.roll[key]||(S.roll[key]={n:0,seen:[]});
   const {pool,notice}=buildPool(S.meal);
-  const unseen=pool.filter(p=>!rec.seen.includes(p.id));
+  const unseen=pool.filter(p=>!roll.seen.includes(p.id));
   const use=unseen.length>=3?unseen:pool;
-  const rng=mulberry32(hashStr(key+"|"+rec.n+"|ganfan"));
+  const drinkPart=S.meal==="drinks"?("|b"+(S.drinkRound||0)):"";
+  const rng=mulberry32(hashStr(key+drinkPart+"|"+roll.n+"|ganfan"));
   const arr=use.slice(); const picks=[]; const brands=new Set();
   for(let k=0;k<3 && arr.length;k++){
     const cand=arr.filter(p=>!brands.has(brandOf(p)));
@@ -470,25 +473,25 @@ function getPicks(){
   return { main:picks[0]||null, backs:picks.slice(1), notice };
 }
 function currentPicks(){
-  const key=dailyKey();
+  const key=dailyKey()+"|"+(S.drinkRound||0);
   if(S.lastPickKey!==key){ S.lastPickKey=key; S.swapIdx=null; S.cache=null; }
   if(!S.cache) S.cache=getPicks();
   return S.cache;
 }
 function doReroll(){
-  const key=dailyKey(); const rec=S.daily[key]||(S.daily[key]={n:0,seen:[]});
+  const roll=S.roll[dailyKey()]||(S.roll[dailyKey()]={n:0,seen:[]});
   const cur=currentPicks().main;
-  if(rec.n>=REROLL_MAX){ toast("天意已定！去"+verb()+"「"+shortName(cur?cur.name:"它")+"」吧"); return; }
-  if(cur) rec.seen.push(cur.id);
-  rec.n++;
-  saveAll(); S.cache=null; S.swapIdx=null; renderDecide();
+  if(S.meal!=="drinks" && roll.n>=REROLL_MAX){ toast("天意已定！去"+verb()+"「"+shortName(cur?cur.name:"它")+"」吧"); return; }
+  if(cur) roll.seen.push(cur.id);
+  roll.n++;
+  S.cache=null; S.swapIdx=null; renderDecide();
 }
 
 /* ---------- 记录 ---------- */
 function logPlace(p, meal){
   if(!p) return;
   const m=meal||S.meal;
-  if(S.hist.some(h=>h.d===todayKey() && h.m===m && h.id===p.id)){ toast("这顿已经记过啦，别重复算钱"); return; }
+  if(m!=="drinks" && S.hist.some(h=>h.d===todayKey() && h.m===m && h.id===p.id)){ toast("这顿已经记过啦，别重复算钱"); return; }
   S.hist.push({ d:todayKey(), m, id:p.id, name:p.name, r:0 });
   saveAll();
   if(S.tab==="log") renderLog();
@@ -555,7 +558,11 @@ function cardHTML(p){
     +"</div></div>"
     +'<div class="info">'+placeLine(p)+(p.note?" · "+p.note:"")+"</div>"
     +((p.tags&&p.tags.length)?'<div class="tagline">'+p.tags.map(t=>'<span class="tag">'+t+"</span>").join("")+"</div>":"")
-    +'<div class="btnrow"><button class="btn" data-act="reroll">'+svgp("reroll")+'换一个</button><button class="btn" data-act="wheel">'+svgp("target")+'转盘</button></div>'
+    +'<div class="btnrow">'
+      +(S.meal==="drinks"
+        ?'<button class="btn" data-act="redrink">'+svgp("reroll")+'再抽一杯</button>'
+        :'<button class="btn" data-act="reroll">'+svgp("reroll")+'换一个</button>')
+      +'<button class="btn" data-act="wheel">'+svgp("target")+'转盘</button></div>'
     +'<div class="btnrow"><button class="btn primary" data-act="log">'+svgp("check")+'就'+verb()+'它 · 记一笔</button></div>'
     +'<div class="minirow">'
       +'<button class="mini'+(wish?" on":"")+'" data-act="wish">'+svg(P.heart)+(wish?"已收藏":"收进心愿单")+'</button>'
@@ -580,8 +587,11 @@ function filtersChipsHTML(){
   return h;
 }
 function renderDecide(){
-  const rec=S.daily[dailyKey()]||{n:0};
-  if(!rec.drawn){
+  const key=dailyKey();
+  const isDrinks=S.meal==="drinks";
+  const locked=!isDrinks && !!(S.daily[key] && S.daily[key].drawn);
+  const roll=S.roll[key];
+  if((isDrinks && !(roll && roll.drawn)) || (!isDrinks && !locked)){
     const icons={breakfast:"sunrise",lunch:"sun",dinner:"moon",drinks:"cup",latenight:"latenight"};
     const titles={
       breakfast:(mealIsTomorrow()?"明早吃什么":"今天早餐吃什么"),
@@ -590,11 +600,12 @@ function renderDecide(){
       drinks:"今天喝点什么",
       latenight:"今天宵夜吃什么"
     };
+    const sub=isDrinks?"想喝就抽，今天可以来好几杯":"答案今天锁定，不服可以换 "+REROLL_MAX+" 发";
     $("viewDecide").innerHTML=
       '<div class="ask">'
       +'<div class="askTile">'+svgp(icons[S.meal])+'</div>'
       +'<div class="askTitle">'+titles[S.meal]+'？</div>'
-      +'<div class="dim">答案今天锁定，不服可以换 '+REROLL_MAX+' 发</div>'
+      +'<div class="dim">'+sub+'</div>'
       +'<div class="btnrow"><button class="btn primary" data-act="draw">'+svgp("dice")+'抽一发</button></div>'
       +"</div>"
       +'<details class="filters"'+(S.filtersOpen?" open":"")+' ontoggle="S.filtersOpen=this.open"><summary>先调筛选再抽</summary>'+filtersChipsHTML()+"</details>";
@@ -602,6 +613,7 @@ function renderDecide(){
     return;
   }
   const picks=currentPicks();
+  const shownRoll=S.roll[key]||{n:0};
   if(S.swapIdx!=null && picks.backs.length){
     const old=picks.main;
     picks.main=picks.backs[S.swapIdx];
@@ -610,8 +622,10 @@ function renderDecide(){
   }
   let h="";
   if(picks.notice) h+='<div class="notice">'+picks.notice+'</div>';
-  const mealLabel=(mealIsTomorrow()?"明早早餐 · ":"今日"+DATA.meals[S.meal].label+" · ")
-    +"第"+(rec.n+1)+"发"+(rec.n>=REROLL_MAX?" · 天意已锁":"");
+  const mealLabel= isDrinks
+    ? "今日饮料 · 第"+((S.drinkRound||0)+1)+"杯"
+    : (mealIsTomorrow()?"明早早餐 · ":"今日"+DATA.meals[S.meal].label+" · ")
+      +"第"+(shownRoll.n+1)+"发"+(shownRoll.n>=REROLL_MAX?" · 天意已锁":"");
   h+='<div class="eyebrow">'+mealLabel+"</div>";
   h+=cardHTML(picks.main);
   if(picks.backs.length){
@@ -755,6 +769,30 @@ function spinWheel(){
 }
 
 /* ---------- 页面切换 ---------- */
+function revealRoll(){
+  const nameEl=document.querySelector('.bigname');
+  const photoEl=document.querySelector('.bigcard .photo');
+  const pool=buildPool(S.meal).pool;
+  const withImg=pool.filter(p=>p.img);
+  let i=0, delay=40;
+  const step=()=>{
+    if(!nameEl || !document.body.contains(nameEl)) return;
+    if(i>=10 || !pool.length){
+      if(nameEl.dataset.target) nameEl.textContent=nameEl.dataset.target;
+      if(photoEl && photoEl.dataset.target) photoEl.src=photoEl.dataset.target;
+      return;
+    }
+    const p=pool[Math.floor(Math.random()*pool.length)];
+    if(!nameEl.dataset.target) nameEl.dataset.target=nameEl.textContent;
+    nameEl.textContent=shortName(p.name);
+    if(photoEl && withImg.length){
+      if(!photoEl.dataset.target) photoEl.dataset.target=photoEl.src;
+      photoEl.src=withImg[i%withImg.length];
+    }
+    i++; delay*=1.3; setTimeout(step, delay);
+  };
+  setTimeout(step, delay);
+}
 function switchTab(t){
   S.tab=t;
   ["decide","log","set"].forEach(x=>{ $("view"+{decide:"Decide",log:"Log",set:"Set"}[x]).hidden = x!==t; });
@@ -772,23 +810,22 @@ document.addEventListener("click", e=>{
     case "meal": S.meal=arg; S.cache=null; S.swapIdx=null; S.lastPickKey=null; renderTabs(); if(S.tab!=="decide") switchTab("decide"); else renderDecide(); break;
     case "tab": switchTab(arg); break;
     case "draw": {
-      const key=dailyKey(); const drec=S.daily[key]||(S.daily[key]={n:0,seen:[]});
-      if(drec.drawn) break;
-      drec.drawn=true; saveAll(); S.cache=null; S.lastPickKey=null;
+      const key=dailyKey();
+      const roll=S.roll[key]||(S.roll[key]={n:0,seen:[]});
+      if(roll.drawn) break;
+      roll.drawn=true;
+      if(S.meal!=="drinks"){ const d=S.daily[key]||(S.daily[key]={}); d.drawn=true; saveAll(); }
+      S.cache=null; S.lastPickKey=null;
       renderDecide();
-      const el=document.querySelector('.bigname');
-      if(el){
-        const target=el.textContent;
-        const pool=buildPool(S.meal).pool;
-        let i=0, delay=40;
-        const step=()=>{
-          if(!el.isConnected) return;
-          if(i>=10 || !pool.length){ el.textContent=target; return; }
-          el.textContent=shortName(pool[Math.floor(Math.random()*pool.length)].name);
-          i++; delay*=1.3; setTimeout(step, delay);
-        };
-        setTimeout(step, delay);
-      }
+      revealRoll();
+      break;
+    }
+    case "redrink": {
+      S.drinkRound=(S.drinkRound||0)+1;
+      S.roll[dailyKey()]={n:0,seen:[],drawn:true};
+      S.cache=null; S.lastPickKey=null;
+      renderDecide();
+      revealRoll();
       break;
     }
     case "reroll": doReroll(); break;
