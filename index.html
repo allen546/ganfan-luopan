@@ -133,6 +133,14 @@ main{min-width:0;padding:0 0 96px}
 @media (min-width:1024px){ .notice{margin:16px 0 0} }
 .dim{color:var(--sub);font-size:12px}
 
+/* 抽一发（未揭晓状态） */
+.ask{text-align:center;padding:44px 16px 8px}
+.askTile{width:78px;height:78px;border-radius:20px;background:var(--fill);display:flex;align-items:center;justify-content:center;margin:0 auto}
+.askTile svg{width:38px;height:38px;color:var(--tint)}
+.askTitle{font-size:30px;font-weight:750;letter-spacing:-0.022em;margin:18px 0 8px;line-height:1.15}
+.ask .dim{font-size:13px}
+.ask .btnrow{max-width:240px;margin:24px auto 0}
+
 /* ---------- 筛选 ---------- */
 details.filters{margin:12px 16px 0;background:var(--card);border-radius:var(--r-card);padding:14px 16px;font-size:13px;box-shadow:0 0 0 .5px rgba(0,0,0,.04),0 1px 6px rgba(0,0,0,.04)}
 details.filters summary{font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between}
@@ -551,8 +559,27 @@ function filtersChipsHTML(){
   return h;
 }
 function renderDecide(){
-  const picks=currentPicks();
   const rec=S.daily[dailyKey()]||{n:0};
+  if(!rec.drawn){
+    const icons={breakfast:"sunrise",lunch:"sun",dinner:"moon",drinks:"cup"};
+    const titles={
+      breakfast:(mealIsTomorrow()?"明早吃什么":"今天早餐吃什么"),
+      lunch:"今天午餐吃什么",
+      dinner:"今天晚餐吃什么",
+      drinks:"今天喝点什么"
+    };
+    $("viewDecide").innerHTML=
+      '<div class="ask">'
+      +'<div class="askTile">'+svgp(icons[S.meal])+'</div>'
+      +'<div class="askTitle">'+titles[S.meal]+'？</div>'
+      +'<div class="dim">答案今天锁定，不服可以换 '+REROLL_MAX+' 发</div>'
+      +'<div class="btnrow"><button class="btn primary" data-act="draw">'+svgp("dice")+'抽一发</button></div>'
+      +"</div>"
+      +'<details class="filters"'+(S.filtersOpen?" open":"")+' ontoggle="S.filtersOpen=this.open"><summary>先调筛选再抽</summary>'+filtersChipsHTML()+"</details>";
+    renderRail();
+    return;
+  }
+  const picks=currentPicks();
   if(S.swapIdx!=null && picks.backs.length){
     const old=picks.main;
     picks.main=picks.backs[S.swapIdx];
@@ -722,6 +749,26 @@ document.addEventListener("click", e=>{
   switch(act){
     case "meal": S.meal=arg; S.cache=null; S.swapIdx=null; S.lastPickKey=null; renderTabs(); if(S.tab!=="decide") switchTab("decide"); else renderDecide(); break;
     case "tab": switchTab(arg); break;
+    case "draw": {
+      const key=dailyKey(); const drec=S.daily[key]||(S.daily[key]={n:0,seen:[]});
+      if(drec.drawn) break;
+      drec.drawn=true; saveAll(); S.cache=null; S.lastPickKey=null;
+      renderDecide();
+      const el=document.querySelector('.bigname');
+      if(el){
+        const target=el.textContent;
+        const pool=buildPool(S.meal).pool;
+        let i=0, delay=40;
+        const step=()=>{
+          if(!el.isConnected) return;
+          if(i>=10 || !pool.length){ el.textContent=target; return; }
+          el.textContent=shortName(pool[Math.floor(Math.random()*pool.length)].name);
+          i++; delay*=1.3; setTimeout(step, delay);
+        };
+        setTimeout(step, delay);
+      }
+      break;
+    }
     case "reroll": doReroll(); break;
     case "swap": S.swapIdx=+arg; renderDecide(); break;
     case "log": { const p=currentPicks().main; logPlace(p); toast(S.meal==="drinks"?"记好啦，喝得开心":"记好啦，干饭愉快"); renderDecide(); break; }
