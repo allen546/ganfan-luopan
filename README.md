@@ -16,6 +16,7 @@
 - **奶茶转盘**：专摇 10 家茶饮咖啡
 - **记录页**：近 7 天餐数、外卖花费估算、本周之最、流水补记
 - **设置页**：心愿单/黑名单管理、自定义选项（小卖部、泡面、自带饭……）、数据导出导入
+- **响应式**：≥1024px 左侧毛玻璃边栏 + 主卡片区；≥1440px 右侧再加筛选/本周速览栏；窄屏底部 Tab + iOS 分段控件。UI 依 [apple-design skill](https://github.com/emilkowalski/skills)（WWDC 设计原则）重制，支持 prefers-reduced-motion / reduced-transparency
 
 ## 本地使用
 
