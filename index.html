@@ -214,7 +214,11 @@ h3.sec{font-size:13px;font-weight:600;color:var(--sub);margin:18px 4px 8px;lette
   box-shadow:0 18px 60px rgba(0,0,0,.25);animation:sheetIn 300ms cubic-bezier(.32,.72,0,1)}
 @keyframes sheetIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
 .sheet h5{font-size:13px;font-weight:600;color:var(--sub)}
-#wheelCanvas{width:min(560px,76vw,64vh);height:min(560px,76vw,64vh);margin:14px auto 4px;display:block}
+#wheelCanvas{width:min(560px,76vw,64vh);max-width:100%;height:auto;aspect-ratio:1;margin:14px auto 4px;display:block}
+.sdList{display:flex;flex-direction:column;gap:8px;margin:16px 0 6px}
+.sdRow{background:#fff;border-radius:14px;padding:13px 16px;text-align:left;box-shadow:0 0 0 .5px rgba(0,0,0,.06);transition:background .12s, box-shadow .12s, transform .12s}
+.sdRow .sdName{font-weight:650;font-size:15px}
+.sdRow.on{background:#FFF3E8;box-shadow:0 0 0 1.5px var(--tint);transform:scale(1.02)}
 .winTile{width:64px;height:64px;border-radius:16px;background:var(--fill);display:flex;align-items:center;justify-content:center;margin:12px auto 0}
 .winTile svg{width:34px;height:34px;color:var(--ink)}
 .winName{font-size:23px;font-weight:700;letter-spacing:-0.02em;margin-top:4px}
@@ -727,10 +731,53 @@ function openWheel(pool){
   }
   wheel.pool=dedup.length>=2?dedup:sorted.slice(0,12);
   $("overlay").hidden=false;
-  $("sheetBody").innerHTML='<h5>天意转盘 · '+wheel.pool.length+' 进 1</h5>'
-    +'<canvas id="wheelCanvas"></canvas>'
-    +'<div class="btnrow"><button class="btn" data-act="closeWheel">关掉</button><button class="btn primary" data-act="spin">转起来</button></div>';
-  drawWheel(0);
+  if(wheel.pool.length<=3){
+    wheel.mode="sd";
+    $("sheetBody").innerHTML='<h5>天意对决 · '+wheel.pool.length+' 选 1</h5>'
+      +'<div class="sdList">'
+      +wheel.pool.map((p,i)=>'<div class="sdRow" id="sdrow'+i+'"><div class="sdName">'+p.name+'</div><div class="dim">¥'+(p.price??"?")+(p.distKm?" · "+p.distKm.toFixed(1)+"km":"")+"</div></div>").join("")
+      +'</div>'
+      +'<div class="btnrow"><button class="btn" data-act="closeWheel">关掉</button><button class="btn primary" data-act="sdraw">天意来选</button></div>';
+  }else{
+    wheel.mode="canvas";
+    $("sheetBody").innerHTML='<h5>天意转盘 · '+wheel.pool.length+' 进 1</h5>'
+      +'<canvas id="wheelCanvas"></canvas>'
+      +'<div class="btnrow"><button class="btn" data-act="closeWheel">关掉</button><button class="btn primary" data-act="spin">转起来</button></div>';
+    drawWheel(0);
+  }
+}
+function showdownDraw(){
+  const n=wheel.pool.length;
+  let i=0;
+  const step=()=>{
+    document.querySelectorAll('.sdRow').forEach(r=>r.classList.remove("on"));
+    if(i>=n*5){
+      const idx=Math.floor(Math.random()*n);
+      const el=document.getElementById("sdrow"+idx);
+      if(el) el.classList.add("on");
+      wheel.winner=wheel.pool[idx];
+      setTimeout(showWheelResult, 550);
+      return;
+    }
+    const el=document.getElementById("sdrow"+(i%n));
+    if(el) el.classList.add("on");
+    i++;
+    setTimeout(step, 70+i*4);
+  };
+  step();
+}
+function showWheelResult(){
+  const w=wheel.winner;
+  if(wheel.sameId===w.id) wheel.sameN++; else {wheel.sameId=w.id; wheel.sameN=1;}
+  let extra=wheel.sameN>=3?'<div class="notice" style="margin-top:12px">连着三次都是它，这就是天意吧</div>':"";
+  $("sheetBody").innerHTML='<h5>天意选中了</h5>'
+    +(w.img?'<img class="winPhoto" src="'+w.img+'" loading="lazy" alt="">':'<div class="winTile">'+svgp(catIcon(w))+"</div>")
+    +'<div class="winName">'+w.name+"</div>"
+    +'<div class="info" style="margin-top:6px">'+placeLine(w)+(w.recs?" · "+w.recs:"")+"</div>"+extra
+    +'<div class="btnrow"><button class="btn" data-act="closeWheel">算了</button>'
+      +(wheel.mode==="canvas"?'<button class="btn" data-act="spin">再转一次</button>':'<button class="btn" data-act="redrawSD">再对决一次</button>')+"</div>"
+    +'<div class="btnrow"><button class="btn primary" data-act="wlog">'+svgp("check")+'就'+verb()+'它 · 记一笔</button></div>'
+    +'<div class="minirow"><button class="mini" data-act="wwish">'+svg(P.heart)+'收心愿单</button><button class="mini" data-act="wban">'+svgp("ban")+'拉黑它</button></div>';
 }
 function drawWheel(rot){
   const cv=$("wheelCanvas"); if(!cv) return;
@@ -775,15 +822,7 @@ function spinWheel(){
     if(p<1) setTimeout(frame,16);
     else{
       wheel.spinning=false; wheel.winner=wheel.pool[idx];
-      if(wheel.sameId===wheel.winner.id) wheel.sameN++; else {wheel.sameId=wheel.winner.id; wheel.sameN=1;}
-      let extra=wheel.sameN>=3?'<div class="notice" style="margin-top:12px">连着三次都是它，这就是天意吧</div>':"";
-      $("sheetBody").innerHTML='<h5>天意选中了</h5>'
-        +(wheel.winner.img?'<img class="winPhoto" src="'+wheel.winner.img+'" loading="lazy" alt="">':'<div class="winTile">'+svgp(catIcon(wheel.winner))+"</div>")
-        +'<div class="winName">'+wheel.winner.name+"</div>"
-        +'<div class="info" style="margin-top:6px">'+placeLine(wheel.winner)+(wheel.winner.recs?" · "+wheel.winner.recs:"")+"</div>"+extra
-        +'<div class="btnrow"><button class="btn" data-act="closeWheel">算了</button><button class="btn" data-act="spin">再转一次</button></div>'
-        +'<div class="btnrow"><button class="btn primary" data-act="wlog">'+svgp("check")+'就'+verb()+'它 · 记一笔</button></div>'
-        +'<div class="minirow"><button class="mini" data-act="wwish">'+svg(P.heart)+'收心愿单</button><button class="mini" data-act="wban">'+svgp("ban")+'拉黑它</button></div>';
+      showWheelResult();
     }
   }
   setTimeout(frame,16);
@@ -856,6 +895,7 @@ document.addEventListener("click", e=>{
     case "ban": { const p=currentPicks().main; if(p){ toggleArr("gf.blacklist",S.black,p.id); S.cache=null; renderDecide(); toast("已拉黑，眼不见为净"); } break; }
     case "wheel": { const {pool}=buildPool(S.meal); openWheel(pool); break; }
     case "spin": spinWheel(); break;
+    case "sdraw": case "redrawSD": showdownDraw(); break;
     case "closeWheel": $("overlay").hidden=true; break;
     case "wlog": logPlace(wheel.winner); $("overlay").hidden=true; toast(S.meal==="drinks"?"记好啦，喝得开心":"记好啦，干饭愉快"); break;
     case "wwish": if(wheel.winner) toggleArr("gf.wishlist",S.wish,wheel.winner.id); break;
