@@ -438,6 +438,10 @@ function buildPool(meal){
     const open=pool.filter(p=>openAt(p,new Date()));
     if(open.length>=3) pool=open;
   }
+  if(meal==="drinks"){
+    const open=pool.filter(p=>openAt(p,new Date()));
+    if(open.length) pool=open;
+  }
   if(meal==="latenight"){
     let open=pool.filter(p=>openAt(p,new Date()));
     if(open.length===0){
@@ -536,7 +540,7 @@ function renderTabs(){
   let h=DATA.meals[S.meal].label;
   if(mealIsTomorrow()) h+=" · 现在是晚上，按「明早」来算";
   if(S.meal==="breakfast") h+=" · 只推 7:15 前能送到的档";
-  if(S.meal==="drinks") h+=" · 茶饮咖啡专区";
+  if(S.meal==="drinks") h+=" · 茶饮咖啡专区，只看现在开着的";
   if(S.meal==="latenight") h+=" · 只看现在还开着的店";
   $("mealHint").textContent=h;
 }
